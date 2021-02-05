@@ -7,7 +7,7 @@ lint:
 link:
 	npm link
 test:
-	npm test
+	npm test --passWithNoTests
 test-coverage:
 	npm test -- --coverage --coverageProvider=v8
 publish:
