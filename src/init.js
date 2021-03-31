@@ -32,11 +32,11 @@ const renderRSSForm = (state) => {
   input.classList.remove('is-invalid');
   input.focus();
   switch (state.ui.feedback) {
-    case 'invalid':
-      input.classList.add('is-invalid');
+    case 'success':
+      form.reset();
       break;
     default:
-      form.reset();
+      input.classList.add('is-invalid');
   }
 };
 

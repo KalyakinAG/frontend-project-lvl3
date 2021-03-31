@@ -5,3 +5,6 @@
 [![Node CI](https://github.com/KalyakinAG/frontend-project-lvl3/workflows/Node%20CI/badge.svg)](https://github.com/KalyakinAG/frontend-project-lvl3/actions)
 
 [Деплой получившегося приложения на Vercel](https://frontend-project-lvl3-beta-lovat.vercel.app/)
+
+Примеры фидов:
+https://habr.com/ru/rss/all/all/?fl=ru
