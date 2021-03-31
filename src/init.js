@@ -6,13 +6,13 @@ import * as yup from 'yup';
 const renderFeedback = (state) => {
   const feedback = document.querySelector('.feedback');
   feedback.classList.remove('text-success', 'text-danger');
-  //  success, invalid_url, invalid_rss, duplicate
+  //  success, invalid, error, duplicate
   switch (state.ui.feedback) {
-    case 'invalid_url':
+    case 'invalid':
       feedback.classList.add('text-danger');
       feedback.textContent = 'Ссылка должна быть валидным URL';
       break;
-    case 'invalid_rss':
+    case 'error':
       feedback.classList.add('text-danger');
       feedback.textContent = 'Ресурс не содержит валидный RSS';
       break;
@@ -23,6 +23,20 @@ const renderFeedback = (state) => {
     default:
       feedback.classList.add('text-success');
       feedback.textContent = 'RSS успешно загружен';
+  }
+};
+
+const renderRSSForm = (state) => {
+  const form = document.querySelector('.rss-form');
+  const input = form.querySelector('input');
+  input.classList.remove('is-invalid');
+  input.focus();
+  switch (state.ui.feedback) {
+    case 'invalid':
+      input.classList.add('is-invalid');
+      break;
+    default:
+      form.reset();
   }
 };
 
@@ -72,13 +86,14 @@ export default () => {
     feeds: [],
     posts: [],
     ui: {
-      feedback: '', // success, invalid_url, invalid_rss, duplicate
+      feedback: '', // success, invalid, error, duplicate
     },
   };
   const watchedState = onChange(state, (path) => {
     switch (path) {
       case 'ui.feedback':
         renderFeedback(state);
+        renderRSSForm(state);
         break;
       case 'feeds':
         renderFeeds(state);
@@ -98,7 +113,7 @@ export default () => {
     const formData = new FormData(e.target);
     const url = formData.get('url');
     if (!schema.isValidSync(url)) {
-      watchedState.ui.feedback = 'invalid_url';
+      watchedState.ui.feedback = 'invalid';
       return;
     }
     axios.get(url, {
@@ -129,7 +144,7 @@ export default () => {
         watchedState.ui.feedback = 'success';
       })
       .catch(() => {
-        watchedState.ui.feedback = 'invalid_rss';
+        watchedState.ui.feedback = 'error';
       });
   });
 };
