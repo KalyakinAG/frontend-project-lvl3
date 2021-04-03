@@ -1,6 +1,7 @@
 import axios from 'axios';
 import onChange from 'on-change';
 import * as yup from 'yup';
+import parse from './parser.js';
 
 const renderFeedback = (state) => {
   const feedback = document.querySelector('.feedback');
@@ -109,7 +110,6 @@ const render = (state) => {
   });
   const schema = yup.string().url();
   const form = document.querySelector('.rss-form');
-  const parser = new DOMParser();
   form.addEventListener('submit', (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
@@ -122,27 +122,13 @@ const render = (state) => {
       method: 'GET',
     })
       .then((response) => {
-        const rss = parser.parseFromString(response.data, 'application/xml');
-        const channel = rss.querySelector('channel');
-        const feed = {
-          title: channel.querySelector('title').textContent,
-          description: channel.querySelector('description').textContent,
-          link: channel.querySelector('link').textContent,
-          guid: channel.querySelector('guid').textContent,
-        };
+        const feed = parse(response.data);
         if (state.feeds.find((item) => item.guid === feed.guid) !== undefined) {
           watchedState.ui.feedback = 'dublicate';
           return;
         }
-        const postsElements = Array.from(channel.querySelectorAll('item'));
-        const posts = postsElements.map((item) => ({
-          title: item.querySelector('title').textContent,
-          link: item.querySelector('link').textContent,
-          guid: item.querySelector('guid').textContent,
-          pubDate: new Date(item.querySelector('pubDate').textContent),
-        }));
         watchedState.feeds = [feed].concat(state.feeds);
-        watchedState.posts = posts.concat(state.posts);
+        watchedState.posts = feed.posts.concat(state.posts);
         watchedState.ui.feedback = 'success';
       })
       .catch(() => {
