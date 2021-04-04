@@ -13,6 +13,7 @@ const parse = (data) => {
     title: item.querySelector('title').textContent,
     link: item.querySelector('link').textContent,
     guid: item.querySelector('guid').textContent,
+    feedGuid: feed.guid,
     pubDate: new Date(item.querySelector('pubDate').textContent),
   }));
   return { feed, posts };
