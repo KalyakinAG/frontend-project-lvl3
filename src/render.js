@@ -118,17 +118,23 @@ const render = (state) => {
       watchedState.ui.feedback = 'invalid';
       return;
     }
-    axios.get(url, {
-      method: 'GET',
+    axios.get('https://hexlet-allorigins.herokuapp.com/get', {
+      params: {
+        url,
+      },
     })
       .then((response) => {
-        const feed = parse(response.data);
+        if (response.status !== 200) {
+          watchedState.ui.feedback = 'error';
+          return;
+        }
+        const { feed, posts } = parse(response.data.contents);
         if (state.feeds.find((item) => item.guid === feed.guid) !== undefined) {
           watchedState.ui.feedback = 'dublicate';
           return;
         }
         watchedState.feeds = [feed].concat(state.feeds);
-        watchedState.posts = feed.posts.concat(state.posts);
+        watchedState.posts = posts.concat(state.posts);
         watchedState.ui.feedback = 'success';
       })
       .catch(() => {

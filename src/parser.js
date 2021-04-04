@@ -8,14 +8,14 @@ const parse = (data) => {
     link: channel.querySelector('link').textContent,
     guid: channel.querySelector('guid').textContent,
   };
-  const posts = Array.from(channel.querySelectorAll('item'));
-  feed.posts = posts.map((item) => ({
+  const postsItems = Array.from(channel.querySelectorAll('item'));
+  const posts = postsItems.map((item) => ({
     title: item.querySelector('title').textContent,
     link: item.querySelector('link').textContent,
     guid: item.querySelector('guid').textContent,
     pubDate: new Date(item.querySelector('pubDate').textContent),
   }));
-  return feed;
+  return { feed, posts };
 };
 
 export default parse;
