@@ -3,26 +3,26 @@ import onChange from 'on-change';
 import * as yup from 'yup';
 import parse from './parser.js';
 
-const renderFeedback = (state) => {
+const renderFeedback = (state, i18n) => {
   const feedback = document.querySelector('.feedback');
   feedback.classList.remove('text-success', 'text-danger');
   //  success, invalid, error, duplicate
   switch (state.ui.feedback) {
     case 'success':
       feedback.classList.add('text-success');
-      feedback.textContent = 'RSS успешно загружен';
+      feedback.textContent = i18n.t('success');
       break;
     case 'invalid':
       feedback.classList.add('text-danger');
-      feedback.textContent = 'Ссылка должна быть валидным URL';
+      feedback.textContent = i18n.t('invalid');
       break;
     case 'error':
       feedback.classList.add('text-danger');
-      feedback.textContent = 'Ресурс не содержит валидный RSS';
+      feedback.textContent = i18n.t('error');
       break;
     case 'dublicate':
       feedback.classList.add('text-danger');
-      feedback.textContent = 'RSS уже существует';
+      feedback.textContent = i18n.t('dublicate');
       break;
     default:
       feedback.textContent = '';
@@ -91,11 +91,12 @@ const renderPosts = (state) => {
   });
 };
 
-const render = (state) => {
+const render = (state, i18n) => {
+  i18n.changeLanguage(state.ui.lng);
   const watchedState = onChange(state, (path) => {
     switch (path) {
       case 'ui.feedback':
-        renderFeedback(state);
+        renderFeedback(state, i18n);
         renderRSSForm(state);
         break;
       case 'feeds':
@@ -103,6 +104,9 @@ const render = (state) => {
         break;
       case 'posts':
         renderPosts(state);
+        break;
+      case 'ui.lng':
+        render(state, i18n);
         break;
       default:
         break;
@@ -141,7 +145,7 @@ const render = (state) => {
         watchedState.ui.feedback = 'error';
       });
   });
-  renderFeedback(state);
+  renderFeedback(state, i18n);
   renderRSSForm(state);
   renderPosts(state);
 };
