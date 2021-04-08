@@ -9,11 +9,12 @@ export default () => {
     feeds: [],
     posts: [],
     ui: {
-      feedback: '', // success, invalid, error, duplicate
       lng: 'ru',
+      error: '',
     },
   };
   const i18n = i18next.createInstance();
+  document.i18n = i18n;
   i18n.init({
     lng: 'en',
     debug: false,

@@ -7,39 +7,30 @@ const renderFeedback = (state, i18n) => {
   const feedback = document.querySelector('.feedback');
   feedback.classList.remove('text-success', 'text-danger');
   //  success, invalid, error, duplicate
-  switch (state.ui.feedback) {
-    case 'success':
-      feedback.classList.add('text-success');
-      feedback.textContent = i18n.t('success');
-      break;
-    case 'invalid':
-      feedback.classList.add('text-danger');
-      feedback.textContent = i18n.t('invalid');
-      break;
-    case 'error':
-      feedback.classList.add('text-danger');
-      feedback.textContent = i18n.t('error');
-      break;
-    case 'dublicate':
-      feedback.classList.add('text-danger');
-      feedback.textContent = i18n.t('dublicate');
-      break;
-    default:
-      feedback.textContent = '';
+  if (state.ui.error === 'success') {
+    feedback.classList.add('text-success');
+    feedback.textContent = i18n.t('success');
+    return;
   }
+  if (state.ui.error !== '') {
+    feedback.classList.add('text-danger');
+    feedback.textContent = i18n.t(`error.${state.ui.error}`);
+    return;
+  }
+  feedback.textContent = '';
 };
 
 const renderRSSForm = (state) => {
   const form = document.querySelector('.rss-form');
   const input = form.querySelector('input');
   input.classList.remove('is-invalid');
-  input.focus();
-  switch (state.ui.feedback) {
-    case 'success':
-      form.reset();
-      break;
-    default:
-      input.classList.add('is-invalid');
+  if (state.ui.error === 'success') {
+    form.reset();
+    return;
+  }
+  if (state.ui.error !== '') {
+    input.classList.add('is-invalid');
+    input.focus();
   }
 };
 
@@ -95,7 +86,7 @@ const render = (state, i18n) => {
   i18n.changeLanguage(state.ui.lng);
   const watchedState = onChange(state, (path) => {
     switch (path) {
-      case 'ui.feedback':
+      case 'ui.error':
         renderFeedback(state, i18n);
         renderRSSForm(state);
         break;
@@ -112,37 +103,66 @@ const render = (state, i18n) => {
         break;
     }
   });
-  const schema = yup.string().url();
   const form = document.querySelector('.rss-form');
+  yup.setLocale({
+    string: {
+      url: 'invalid_url',
+    },
+  });
+  const schema = yup.string().url();
   form.addEventListener('submit', (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
     const url = formData.get('url');
-    if (!schema.isValidSync(url)) {
-      watchedState.ui.feedback = 'invalid';
-      return;
-    }
-    axios.get('https://hexlet-allorigins.herokuapp.com/get', {
-      params: {
-        url,
-      },
-    })
+    let hasError = false;
+    schema.validate(url)
+      .catch((err) => {
+        [watchedState.ui.error] = err.errors;
+        hasError = true;
+      })
+      .then(() => {
+        if (hasError === true) {
+          return undefined;
+        }
+        return axios.get('https://hexlet-allorigins.herokuapp.com/get', {
+          params: { url },
+        });
+      })
       .then((response) => {
+        if (hasError === true) {
+          return;
+        }
         if (response.status !== 200) {
-          watchedState.ui.feedback = 'error';
+          watchedState.ui.error = 'invalid_rss';
           return;
         }
         const { feed, posts } = parse(response.data.contents);
         if (state.feeds.find((item) => item.guid === feed.guid) !== undefined) {
-          watchedState.ui.feedback = 'dublicate';
+          watchedState.ui.error = 'dublicate';
           return;
         }
         watchedState.feeds = [feed].concat(state.feeds);
         watchedState.posts = posts.concat(state.posts);
-        watchedState.ui.feedback = 'success';
+        watchedState.ui.error = 'success';
       })
-      .catch(() => {
-        watchedState.ui.feedback = 'error';
+      .catch((error) => {
+        if (error.response) {
+          // The request was made and the server responded with a status code
+          // that falls out of the range of 2xx
+          console.log(error.response.data);
+          console.log(error.response.status);
+          console.log(error.response.headers);
+        } else if (error.request) {
+          // The request was made but no response was received
+          // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
+          // http.ClientRequest in node.js
+          console.log(error.request);
+        } else {
+          // Something happened in setting up the request that triggered an Error
+          console.log('Error', error.message);
+        }
+        console.log(error.config);
+        watchedState.ui.error = 'invalid_rss';
       });
   });
   renderFeedback(state, i18n);
