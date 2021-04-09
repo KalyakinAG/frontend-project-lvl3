@@ -139,7 +139,7 @@ const render = (state, i18n) => {
         return response;
       })
       .then((response) => {
-        if (!isPassConnection) return;
+        if (response === null) return;
         const { feed, posts } = parse(response.data.contents);
         if (state.feeds.find((item) => item.guid === feed.guid) !== undefined) {
           watchedState.ui.message = 'dublicate';
