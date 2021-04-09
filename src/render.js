@@ -6,15 +6,14 @@ import parse from './parser.js';
 const renderFeedback = (state, i18n) => {
   const feedback = document.querySelector('.feedback');
   feedback.classList.remove('text-success', 'text-danger');
-  //  success, invalid, error, duplicate
-  if (state.ui.error === 'success') {
+  if (state.ui.message === 'success') {
     feedback.classList.add('text-success');
     feedback.textContent = i18n.t('success');
     return;
   }
-  if (state.ui.error !== '') {
+  if (state.ui.message !== '') {
     feedback.classList.add('text-danger');
-    feedback.textContent = i18n.t(`error.${state.ui.error}`);
+    feedback.textContent = i18n.t(state.ui.message);
     return;
   }
   feedback.textContent = '';
@@ -24,11 +23,11 @@ const renderRSSForm = (state) => {
   const form = document.querySelector('.rss-form');
   const input = form.querySelector('input');
   input.classList.remove('is-invalid');
-  if (state.ui.error === 'success') {
+  if (state.ui.message === 'success') {
     form.reset();
     return;
   }
-  if (state.ui.error !== '') {
+  if (state.ui.message !== '') {
     input.classList.add('is-invalid');
     input.focus();
   }
@@ -86,7 +85,7 @@ const render = (state, i18n) => {
   i18n.changeLanguage(state.ui.lng);
   const watchedState = onChange(state, (path) => {
     switch (path) {
-      case 'ui.error':
+      case 'ui.message':
         renderFeedback(state, i18n);
         renderRSSForm(state);
         break;
@@ -114,55 +113,41 @@ const render = (state, i18n) => {
     e.preventDefault();
     const formData = new FormData(e.target);
     const url = formData.get('url');
-    let hasError = false;
+    let isPassURL = true;
+    let isPassConnection = true;
     schema.validate(url)
-      .catch((err) => {
-        [watchedState.ui.error] = err.errors;
-        hasError = true;
+      .catch((error) => {
+        [watchedState.ui.message] = error.errors;
+        isPassURL = false;
       })
       .then(() => {
-        if (hasError === true) {
-          return undefined;
-        }
+        if (!isPassURL) return null;
         return axios.get('https://hexlet-allorigins.herokuapp.com/get', {
           params: { url },
         });
       })
+      .catch(() => {
+        watchedState.ui.message = 'connection_error';
+        isPassConnection = false;
+      })
       .then((response) => {
-        if (hasError === true) {
-          return;
+        if (!isPassConnection) return null;
+        if (response.data.status.http_code !== 200) {
+          watchedState.ui.message = 'invalid_rss';
+          return null;
         }
-        if (response.status !== 200) {
-          watchedState.ui.error = 'invalid_rss';
-          return;
-        }
+        return response;
+      })
+      .then((response) => {
+        if (!isPassConnection) return;
         const { feed, posts } = parse(response.data.contents);
         if (state.feeds.find((item) => item.guid === feed.guid) !== undefined) {
-          watchedState.ui.error = 'dublicate';
+          watchedState.ui.message = 'dublicate';
           return;
         }
         watchedState.feeds = [feed].concat(state.feeds);
         watchedState.posts = posts.concat(state.posts);
-        watchedState.ui.error = 'success';
-      })
-      .catch((error) => {
-        if (error.response) {
-          // The request was made and the server responded with a status code
-          // that falls out of the range of 2xx
-          console.log(error.response.data);
-          console.log(error.response.status);
-          console.log(error.response.headers);
-        } else if (error.request) {
-          // The request was made but no response was received
-          // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
-          // http.ClientRequest in node.js
-          console.log(error.request);
-        } else {
-          // Something happened in setting up the request that triggered an Error
-          console.log('Error', error.message);
-        }
-        console.log(error.config);
-        watchedState.ui.error = 'invalid_rss';
+        watchedState.ui.message = 'success';
       });
   });
   renderFeedback(state, i18n);

@@ -10,7 +10,7 @@ export default () => {
     posts: [],
     ui: {
       lng: 'ru',
-      error: '',
+      state: '',
     },
   };
   const i18n = i18next.createInstance();
