@@ -6,8 +6,8 @@ import en from './locales/en.js';
 
 export default () => {
   const state = {
-    feeds: [],
-    posts: [],
+    feeds: [], //  { title, description, link, url, guid }
+    posts: [], //  { title, link, guid, feedGuid, pubDate }
     ui: {
       lng: 'ru',
       state: '',

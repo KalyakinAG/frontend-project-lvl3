@@ -19,12 +19,11 @@ const renderFeedback = (state, i18n) => {
   feedback.textContent = '';
 };
 
-const renderRSSForm = (state) => {
+const renderInputForm = (state) => {
   const form = document.querySelector('.rss-form');
   const input = form.querySelector('input');
   input.classList.remove('is-invalid');
   if (state.ui.message === 'success') {
-    form.reset();
     return;
   }
   if (state.ui.message !== '') {
@@ -87,7 +86,9 @@ const render = (state, i18n) => {
     switch (path) {
       case 'ui.message':
         renderFeedback(state, i18n);
-        renderRSSForm(state);
+        break;
+      case 'ui.url':
+        renderInputForm(state);
         break;
       case 'feeds':
         renderFeeds(state);
@@ -102,6 +103,32 @@ const render = (state, i18n) => {
         break;
     }
   });
+  const refresh = () => {
+    //  создание массива промисов на чтение данных
+    const promises = state.feeds.map((feed) => axios.get('https://hexlet-allorigins.herokuapp.com/get', {
+      params: {
+        url: feed.url,
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        Expires: 0,
+        timestamp: new Date().getTime(),
+      },
+    }));
+    Promise.all(promises)
+      .then((responses) => {
+        watchedState.posts = responses
+          .reduce((posts, response) => {
+            const [, currentPosts] = parse(response.data.contents);
+            return [...posts, ...currentPosts];
+          }, [])
+          .filter((post) => !state.posts.find((itemPost) => itemPost.guid === post.guid))
+          .concat(state.posts)
+          .sort((post1, post2) => post2.pubDate - post1.pubDate)
+          .slice(0, 30);
+        setTimeout(refresh, 5000);
+      });
+  };
+  setTimeout(refresh, 5000);
+
   const form = document.querySelector('.rss-form');
   yup.setLocale({
     string: {
@@ -112,10 +139,10 @@ const render = (state, i18n) => {
   form.addEventListener('submit', (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
-    const url = formData.get('url');
+    const urlFeed = formData.get('url');
     let isPassURL = true;
     let isPassConnection = true;
-    schema.validate(url)
+    schema.validate(urlFeed)
       .catch((error) => {
         [watchedState.ui.message] = error.errors;
         isPassURL = false;
@@ -123,7 +150,12 @@ const render = (state, i18n) => {
       .then(() => {
         if (!isPassURL) return null;
         return axios.get('https://hexlet-allorigins.herokuapp.com/get', {
-          params: { url },
+          params: {
+            url: urlFeed,
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            Expires: 0,
+            timestamp: new Date().getTime(),
+          },
         });
       })
       .catch(() => {
@@ -140,18 +172,22 @@ const render = (state, i18n) => {
       })
       .then((response) => {
         if (response === null) return;
-        const { feed, posts } = parse(response.data.contents);
-        if (state.feeds.find((item) => item.guid === feed.guid) !== undefined) {
+        const [feed, posts] = parse(response.data.contents);
+        feed.url = urlFeed;
+        if (state.feeds.find((itemFeed) => itemFeed.guid === feed.guid) !== undefined) {
           watchedState.ui.message = 'dublicate';
           return;
         }
         watchedState.feeds = [feed].concat(state.feeds);
-        watchedState.posts = posts.concat(state.posts);
+        watchedState.posts = posts.concat(state.posts)
+          .sort((post1, post2) => post2.pubDate - post1.pubDate)
+          .slice(0, 30);
         watchedState.ui.message = 'success';
+        form.reset();
       });
   });
   renderFeedback(state, i18n);
-  renderRSSForm(state);
+  renderInputForm(state);
   renderPosts(state);
 };
 

@@ -16,7 +16,7 @@ const parse = (data) => {
     feedGuid: feed.guid,
     pubDate: new Date(item.querySelector('pubDate').textContent),
   }));
-  return { feed, posts };
+  return [feed, posts];
 };
 
 export default parse;

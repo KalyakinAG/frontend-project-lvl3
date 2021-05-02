@@ -8,3 +8,4 @@
 
 Примеры фидов:
 https://habr.com/ru/rss/all/all/?fl=ru
+http://lorem-rss.herokuapp.com/feed?unit=second
