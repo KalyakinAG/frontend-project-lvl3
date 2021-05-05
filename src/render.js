@@ -1,41 +1,73 @@
 import axios from 'axios';
-import onChange from 'on-change';
 import * as yup from 'yup';
+import i18n from 'i18next';
 import parse from './parser.js';
 
-const renderFeedback = (state, i18n) => {
-  const feedback = document.querySelector('.feedback');
+export const renderModal = (elements, watchedState) => {
+  const { modal } = elements;
+  const modalTitle = modal.querySelector('.modal-title');
+  const modalBody = modal.querySelector('.modal-body');
+  const buttonFullArticle = modal.querySelector('.btn-primary');
+  const buttonClose = modal.querySelector('.close');
+  const buttonCloseSecondary = modal.querySelector('.btn-secondary');
+  modal.classList.remove('show');
+  if (watchedState.ui.selectedPostId === '') {
+    modal.setAttribute('style', 'display: none;');
+    return;
+  }
+  const isSelectedPost = (item) => item.guid === watchedState.ui.selectedPostId;
+  const selectedPost = watchedState.posts.find(isSelectedPost);
+  modalTitle.textContent = selectedPost.title;
+  modalBody.innerHTML = selectedPost.description;
+  buttonFullArticle.setAttribute('href', selectedPost.link);
+  modal.classList.add('show');
+  modal.setAttribute('style', 'display: block;');
+  const posts = document.querySelector('.posts');
+  const href = posts.querySelector(`[data-id='${watchedState.ui.selectedPostId}']`);
+  href.classList.remove('font-weight-bold');
+  href.classList.add('font-weight-normal');
+  buttonClose.addEventListener('click', (e) => {
+    e.preventDefault();
+    watchedState.ui.selectedPostId = '';
+  });
+  buttonCloseSecondary.addEventListener('click', (e) => {
+    e.preventDefault();
+    watchedState.ui.selectedPostId = '';
+  });
+};
+
+export const renderFeedback = (elements, watchedState) => {
+  const { feedback } = elements;
   feedback.classList.remove('text-success', 'text-danger');
-  if (state.ui.message === 'success') {
+  if (watchedState.ui.message === 'success') {
     feedback.classList.add('text-success');
     feedback.textContent = i18n.t('success');
     return;
   }
-  if (state.ui.message !== '') {
+  if (watchedState.ui.message !== '') {
     feedback.classList.add('text-danger');
-    feedback.textContent = i18n.t(state.ui.message);
+    feedback.textContent = i18n.t(watchedState.ui.message);
     return;
   }
   feedback.textContent = '';
 };
 
-const renderInputForm = (state) => {
-  const form = document.querySelector('.rss-form');
-  const input = form.querySelector('input');
+export const renderInputForm = (elements, watchedState) => {
+  const { input } = elements;
   input.classList.remove('is-invalid');
-  if (state.ui.message === 'success') {
+  if (watchedState.ui.message === 'success') {
     return;
   }
-  if (state.ui.message !== '') {
+  if (watchedState.ui.message !== '') {
     input.classList.add('is-invalid');
     input.focus();
   }
 };
 
-const renderFeeds = (state) => {
-  const feeds = document.querySelector('.feeds');
+export const renderFeeds = (elements, watchedState) => {
+  const { feeds } = elements;
   feeds.innerHTML = '';
-  if (state.feeds.length === 0) {
+  if (watchedState.feeds.length === 0) {
     return;
   }
   const head = document.createElement('h2');
@@ -44,7 +76,7 @@ const renderFeeds = (state) => {
   list.classList.add('list-group', 'mb-5');
   feeds.appendChild(head);
   feeds.appendChild(list);
-  state.feeds.forEach((item) => {
+  watchedState.feeds.forEach((item) => {
     const listItem = document.createElement('li');
     list.appendChild(listItem);
     listItem.innerHTML = `<h3>${item.title}</h3><p>${item.description}</p>`;
@@ -52,10 +84,10 @@ const renderFeeds = (state) => {
   });
 };
 
-const renderPosts = (state) => {
-  const posts = document.querySelector('.posts');
+export const renderPosts = (elements, watchedState) => {
+  const { posts } = elements;
   posts.innerHTML = '';
-  if (state.posts.length === 0) {
+  if (watchedState.posts.length === 0) {
     return;
   }
   const head = document.createElement('h2');
@@ -64,12 +96,17 @@ const renderPosts = (state) => {
   list.classList.add('list-group');
   posts.appendChild(head);
   posts.appendChild(list);
-  state.posts.forEach((item) => {
+  watchedState.posts.forEach((item) => {
     const listItem = document.createElement('li');
     listItem.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start');
     const href = document.createElement('a');
     href.setAttribute('href', item.link);
-    href.classList.add('font-weight-bold');
+    href.setAttribute('data-id', item.guid);
+    if (watchedState.ui.readedPosts.includes(item.guid)) {
+      href.classList.add('font-weight-normal');
+    } else {
+      href.classList.add('font-weight-bold');
+    }
     href.textContent = item.title;
     listItem.appendChild(href);
     const button = document.createElement('button');
@@ -77,65 +114,21 @@ const renderPosts = (state) => {
     button.textContent = 'Просмотр';
     listItem.appendChild(button);
     list.appendChild(listItem);
+    button.addEventListener('click', (e) => {
+      e.preventDefault();
+      const a = e.target.parentElement.querySelector('a');
+      watchedState.ui.selectedPostId = a.getAttribute('data-id');
+      if (!watchedState.ui.readedPosts.includes(watchedState.ui.selectedPostId)) {
+        watchedState.ui.readedPosts.push(watchedState.ui.selectedPostId);
+      }
+    });
   });
 };
-
-const render = (state, i18n) => {
-  i18n.changeLanguage(state.ui.lng);
-  const watchedState = onChange(state, (path) => {
-    switch (path) {
-      case 'ui.message':
-        renderFeedback(state, i18n);
-        break;
-      case 'ui.url':
-        renderInputForm(state);
-        break;
-      case 'feeds':
-        renderFeeds(state);
-        break;
-      case 'posts':
-        renderPosts(state);
-        break;
-      case 'ui.lng':
-        render(state, i18n);
-        break;
-      default:
-        break;
-    }
-  });
-  const refresh = () => {
-    //  создание массива промисов на чтение данных
-    const promises = state.feeds.map((feed) => axios.get('https://hexlet-allorigins.herokuapp.com/get', {
-      params: {
-        url: feed.url,
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
-        Expires: 0,
-        timestamp: new Date().getTime(),
-      },
-    }));
-    Promise.all(promises)
-      .then((responses) => {
-        watchedState.posts = responses
-          .reduce((posts, response) => {
-            const [, currentPosts] = parse(response.data.contents);
-            return [...posts, ...currentPosts];
-          }, [])
-          .filter((post) => !state.posts.find((itemPost) => itemPost.guid === post.guid))
-          .concat(state.posts)
-          .sort((post1, post2) => post2.pubDate - post1.pubDate)
-          .slice(0, 30);
-        setTimeout(refresh, 5000);
-      });
-  };
-  setTimeout(refresh, 5000);
-
-  const form = document.querySelector('.rss-form');
-  yup.setLocale({
-    string: {
-      url: 'invalid_url',
-    },
-  });
+/* eslint no-param-reassign: ["error", { "props": false }] */
+export const render = (elements, watchedState) => {
+  i18n.changeLanguage(watchedState.ui.lng);
   const schema = yup.string().url();
+  const { form } = elements;
   form.addEventListener('submit', (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
@@ -174,21 +167,20 @@ const render = (state, i18n) => {
         if (response === null) return;
         const [feed, posts] = parse(response.data.contents);
         feed.url = urlFeed;
-        if (state.feeds.find((itemFeed) => itemFeed.guid === feed.guid) !== undefined) {
+        if (watchedState.feeds.find((itemFeed) => itemFeed.guid === feed.guid) !== undefined) {
           watchedState.ui.message = 'dublicate';
           return;
         }
-        watchedState.feeds = [feed].concat(state.feeds);
-        watchedState.posts = posts.concat(state.posts)
+        watchedState.feeds = [feed].concat(watchedState.feeds);
+        watchedState.posts = posts.concat(watchedState.posts)
           .sort((post1, post2) => post2.pubDate - post1.pubDate)
           .slice(0, 30);
         watchedState.ui.message = 'success';
         form.reset();
       });
   });
-  renderFeedback(state, i18n);
-  renderInputForm(state);
-  renderPosts(state);
+  renderFeedback(elements, watchedState);
+  renderInputForm(elements, watchedState);
+  renderPosts(elements, watchedState);
+  renderModal(elements, watchedState);
 };
-
-export default render;

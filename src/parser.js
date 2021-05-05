@@ -11,6 +11,7 @@ const parse = (data) => {
   const postsItems = Array.from(channel.querySelectorAll('item'));
   const posts = postsItems.map((item) => ({
     title: item.querySelector('title').textContent,
+    description: item.querySelector('description').textContent,
     link: item.querySelector('link').textContent,
     guid: item.querySelector('guid').textContent,
     feedGuid: feed.guid,
