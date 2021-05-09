@@ -5,35 +5,47 @@ import parse from './parser.js';
 
 export const renderModal = (elements, watchedState) => {
   const { modal } = elements;
-  const modalTitle = modal.querySelector('.modal-title');
-  const modalBody = modal.querySelector('.modal-body');
-  const buttonFullArticle = modal.querySelector('.btn-primary');
-  const buttonClose = modal.querySelector('.close');
-  const buttonCloseSecondary = modal.querySelector('.btn-secondary');
-  modal.classList.remove('show');
   if (watchedState.ui.selectedPostId === '') {
+    //  Скрытие модального диалога
+    modal.removeAttribute('aria-modal');
     modal.setAttribute('style', 'display: none;');
+    modal.setAttribute('aria-hidden', true);
+    modal.classList.remove('show');
+    //  Выключения эффекта затемнения основного окна
+    document.body.classList.remove('modal-open');
+    const fadeModal = document.body.querySelector('.modal-backdrop');
+    if (fadeModal !== null) {
+      document.body.removeChild(fadeModal);
+    }
     return;
   }
+  //  Поиск выбранной новости
   const isSelectedPost = (item) => item.guid === watchedState.ui.selectedPostId;
   const selectedPost = watchedState.posts.find(isSelectedPost);
+  //  Заголовок
+  const modalTitle = modal.querySelector('.modal-title');
   modalTitle.textContent = selectedPost.title;
+  //  Описание
+  const modalBody = modal.querySelector('.modal-body');
   modalBody.innerHTML = selectedPost.description;
+  //  Настройка перехода по ссылке
+  const buttonFullArticle = modal.querySelector('.btn-primary');
   buttonFullArticle.setAttribute('href', selectedPost.link);
-  modal.classList.add('show');
-  modal.setAttribute('style', 'display: block;');
+  //  Пометка ссылки поста как прочитана
   const posts = document.querySelector('.posts');
   const href = posts.querySelector(`[data-id='${watchedState.ui.selectedPostId}']`);
   href.classList.remove('font-weight-bold');
   href.classList.add('font-weight-normal');
-  buttonClose.addEventListener('click', (e) => {
-    e.preventDefault();
-    watchedState.ui.selectedPostId = '';
-  });
-  buttonCloseSecondary.addEventListener('click', (e) => {
-    e.preventDefault();
-    watchedState.ui.selectedPostId = '';
-  });
+  //  Настройка эффекта затемнения основного окна и показ модального диалога
+  const modalFade = document.createElement('div');
+  modalFade.classList.add('modal-backdrop', 'fade', 'show');
+  document.body.appendChild(modalFade);
+  document.body.classList.add('modal-open');
+  modal.removeAttribute('aria-hidden');
+  modal.setAttribute('style', 'display: block;');
+  modal.setAttribute('aria-modal', true);
+  modal.classList.add('show');
+  modal.focus();
 };
 
 export const renderFeedback = (elements, watchedState) => {
@@ -111,7 +123,7 @@ export const renderPosts = (elements, watchedState) => {
     listItem.appendChild(href);
     const button = document.createElement('button');
     button.classList.add('btn', 'btn-primary', 'btn-sm');
-    button.textContent = 'Просмотр';
+    button.textContent = i18n.t('viewing');
     listItem.appendChild(button);
     list.appendChild(listItem);
     button.addEventListener('click', (e) => {

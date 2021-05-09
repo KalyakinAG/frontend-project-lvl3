@@ -1,9 +1,11 @@
 export default {
   translation: {
     success: 'RSS успешно загружен',
-    invalid_rss: 'Ресурс не содержит валидный RSS',
-    invalid_url: 'Ссылка должна быть валидным URL',
     dublicate: 'RSS уже существует',
-    connection_error: 'Ошибка соединения',
+    empty: 'Не должно быть пустым',
+    invalid_url: 'Ссылка должна быть валидным URL',
+    invalid_rss: 'Ресурс не содержит валидный RSS',
+    viewing: 'Просмотр',
+    connection_error: 'Ошибка сети',
   },
 };

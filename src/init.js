@@ -21,8 +21,9 @@ export default () => {
     },
   };
   const form = document.querySelector('.rss-form');
+  const modal = document.querySelector('.modal');
   const elements = {
-    modal: document.querySelector('.modal'),
+    modal,
     form,
     input: form.querySelector('input'),
     feeds: document.querySelector('.feeds'),
@@ -54,6 +55,21 @@ export default () => {
         break;
       default:
         break;
+    }
+  });
+  const buttonClose = modal.querySelector('.close');
+  const buttonCloseSecondary = modal.querySelector('.btn-secondary');
+  buttonClose.addEventListener('click', (e) => {
+    e.preventDefault();
+    watchedState.ui.selectedPostId = '';
+  });
+  buttonCloseSecondary.addEventListener('click', (e) => {
+    e.preventDefault();
+    watchedState.ui.selectedPostId = '';
+  });
+  modal.addEventListener('keydown', (e) => {
+    if (e.keyCode === 27) {
+      watchedState.ui.selectedPostId = '';
     }
   });
   yup.setLocale({
