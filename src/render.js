@@ -159,6 +159,7 @@ export const render = (elements, watchedState) => {
         return axios.get('https://hexlet-allorigins.herokuapp.com/get', {
           params: {
             url: urlFeed,
+            disableCache: true,
           },
         });
       })

@@ -91,9 +91,7 @@ export default () => {
     const promises = state.feeds.map((feed) => axios.get('https://hexlet-allorigins.herokuapp.com/get', {
       params: {
         url: feed.url,
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
-        Expires: 0,
-        timestamp: new Date().getTime(),
+        disableCache: true,
       },
     }));
     Promise.all(promises)
@@ -107,8 +105,8 @@ export default () => {
           .concat(state.posts)
           .sort((post1, post2) => post2.pubDate - post1.pubDate)
           .slice(0, 30);
-        //setTimeout(loadNewPosts, 5000);
+        setTimeout(loadNewPosts, 5000);
       });
   };
-  //setTimeout(loadNewPosts, 5000);
+  setTimeout(loadNewPosts, 5000);
 };
