@@ -21,7 +21,7 @@ export default () => {
     },
   };
   const form = document.querySelector('.rss-form');
-  console.log(document);
+  console.log(document.body.innerHTML);
   const modal = document.querySelector('.modal');
   const elements = {
     input: form.querySelector('input'),
