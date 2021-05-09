@@ -23,12 +23,12 @@ export default () => {
   const form = document.querySelector('.rss-form');
   const modal = document.querySelector('.modal');
   const elements = {
-    modal,
-    form,
     input: form.querySelector('input'),
     feeds: document.querySelector('.feeds'),
     posts: document.querySelector('.posts'),
     feedback: document.querySelector('.feedback'),
+    modal,
+    form,
   };
   const watchedState = onChange(state, (path) => {
     switch (path) {
