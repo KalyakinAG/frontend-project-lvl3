@@ -145,15 +145,17 @@ export const render = (elements, watchedState) => {
     e.preventDefault();
     const formData = new FormData(e.target);
     const urlFeed = formData.get('url');
-    let isPassURL = true;
-    let isPassConnection = true;
+    const error = {
+      isPassURL: true,
+      isPassConnection: true,
+    };
     schema.validate(urlFeed)
-      .catch((error) => {
-        [watchedState.ui.message] = error.errors;
-        isPassURL = false;
+      .catch((urlError) => {
+        [watchedState.ui.message] = urlError.errors;
+        error.isPassURL = false;
       })
       .then(() => {
-        if (!isPassURL) return null;
+        if (!error.isPassURL) return null;
         return axios.get('https://hexlet-allorigins.herokuapp.com/get', {
           params: {
             url: urlFeed,
@@ -165,10 +167,10 @@ export const render = (elements, watchedState) => {
       })
       .catch(() => {
         watchedState.ui.message = 'connection_error';
-        isPassConnection = false;
+        error.isPassConnection = false;
       })
       .then((response) => {
-        if (!isPassConnection) return null;
+        if (!error.isPassConnection) return null;
         if (response.data.status.http_code !== 200) {
           watchedState.ui.message = 'invalid_rss';
           return null;
