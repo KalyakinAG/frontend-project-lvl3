@@ -170,8 +170,7 @@ export const render = (elements, watchedState) => {
       })
       .then((response) => {
         if (!errorState.isPassConnection) return null;
-        console.log(response);
-        if (response.data.status.http_code !== 200) {
+        if (response.status !== 200) {
           watchedState.ui.message = 'invalid_rss';
           return null;
         }
