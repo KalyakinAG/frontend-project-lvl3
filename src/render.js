@@ -175,6 +175,7 @@ export const render = (elements, watchedState) => {
         watchedState.ui.message = 'connection_error';
         errorState.isPassConnection = false;
         console.log(e);
+        console.log(watchedState);
       })
       .then((response) => {
         if (!errorState.isPassConnection) return null;
