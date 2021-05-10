@@ -2,7 +2,7 @@ import axios from 'axios';
 import * as yup from 'yup';
 import i18n from 'i18next';
 import parse from './parser.js';
-import _ from 'lodash';
+import _, { reduceRight } from 'lodash';
 
 export const renderModal = (elements, watchedState) => {
   const { modal } = elements;
@@ -149,6 +149,7 @@ export const render = (elements, watchedState) => {
   const { form, input } = elements;
   form.addEventListener('submit', (e) => {
     e.preventDefault();
+    if (watchedState.ui.readonly) return;
     const formData = new FormData(e.target);
     const urlFeed = formData.get('url');
     const errorState = {
@@ -177,9 +178,13 @@ export const render = (elements, watchedState) => {
       })
       .then((response) => {
         if (!errorState.isPassConnection) return null;
-        console.log(errorState);
-        if (_.has(response, 'data.status.http_code') && response.data.status.http_code !== 200
-        || _.has(response, 'request.response.statusCode') && response.request.response.statusCode !== 200) {
+        if (_.has(response, 'data.status.http_code') && response.data.status.http_code !== 200) {
+          console.log('data.status.http_code');
+          watchedState.ui.message = 'invalid_rss';
+          return null;
+        }
+        if (_.has(response, 'request.response.statusCode') && response.request.response.statusCode !== 200) {
+          console.log('request.response.statusCode');
           watchedState.ui.message = 'invalid_rss';
           return null;
         }
