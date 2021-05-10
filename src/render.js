@@ -2,6 +2,7 @@ import axios from 'axios';
 import * as yup from 'yup';
 import i18n from 'i18next';
 import parse from './parser.js';
+import _ from 'lodash';
 
 export const renderModal = (elements, watchedState) => {
   const { modal } = elements;
@@ -175,7 +176,8 @@ export const render = (elements, watchedState) => {
       .then((response) => {
         if (!errorState.isPassConnection) return null;
         console.log(response);
-        if (response.status === 200 && response.data.status.http_code !== 200) {
+        if (_.has(response, 'data.status.http_code') && response.data.status.http_code !== 200
+        || _.has(response, 'request.response.statusCode') && response.request.response.statusCode !== 200) {
           watchedState.ui.message = 'invalid_rss';
           return null;
         }
