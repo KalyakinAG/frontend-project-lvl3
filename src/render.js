@@ -150,13 +150,14 @@ export const render = (elements, watchedState) => {
   form.addEventListener('submit', (e) => {
     e.preventDefault();
     if (watchedState.ui.readonly) return;
-    watchedState.ui.readonly = true;
     const formData = new FormData(e.target);
     const feedURL = formData.get('url');
+    watchedState.ui.readonly = true;
     const errorState = {
       isPassURL: true,
       isPassConnection: true,
     };
+    console.log(feedURL);
     schema.validate(feedURL)
       .catch((urlError) => {
         [watchedState.ui.message] = urlError.errors;
