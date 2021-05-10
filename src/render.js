@@ -175,7 +175,7 @@ export const render = (elements, watchedState) => {
       })
       .then((response) => {
         if (!errorState.isPassConnection) return null;
-        console.log(response);
+        console.log(errorState);
         if (_.has(response, 'data.status.http_code') && response.data.status.http_code !== 200
         || _.has(response, 'request.response.statusCode') && response.request.response.statusCode !== 200) {
           watchedState.ui.message = 'invalid_rss';
@@ -201,7 +201,8 @@ export const render = (elements, watchedState) => {
       .then(() => {
         watchedState.ui.readonly = false;
         input.focus();
-      });
+      })
+      .catch((e) => console.log(e));
   });
   renderFeedback(elements, watchedState);
   renderInputForm(elements, watchedState);
