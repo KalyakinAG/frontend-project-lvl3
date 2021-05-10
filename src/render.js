@@ -150,23 +150,29 @@ export const render = (elements, watchedState) => {
   form.addEventListener('submit', (e) => {
     e.preventDefault();
     if (watchedState.ui.readonly) return;
+    watchedState.ui.readonly = true;
     const formData = new FormData(e.target);
-    const urlFeed = formData.get('url');
+    const feedURL = formData.get('url');
     const errorState = {
       isPassURL: true,
       isPassConnection: true,
     };
-    schema.validate(urlFeed)
+    schema.validate(feedURL)
       .catch((urlError) => {
         [watchedState.ui.message] = urlError.errors;
         errorState.isPassURL = false;
       })
       .then(() => {
         if (!errorState.isPassURL) return null;
-        watchedState.ui.readonly = true;
+
+        if (watchedState.feeds.find((itemFeed) => itemFeed.url === feedURL) !== undefined) {
+          watchedState.ui.message = 'dublicate';
+          return null;
+        }
+    
         return axios.get('https://hexlet-allorigins.herokuapp.com/get', {
           params: {
-            url: urlFeed,
+            url: feedURL,
             disableCache: true,
           },
         });
@@ -194,7 +200,7 @@ export const render = (elements, watchedState) => {
       .then((response) => {
         if (response === null) return;
         const [feed, posts] = parse(response.data.contents);
-        feed.url = urlFeed;
+        feed.url = feedURL;
         if (watchedState.feeds.find((itemFeed) => itemFeed.guid === feed.guid) !== undefined) {
           watchedState.ui.message = 'dublicate';
           return;
