@@ -16,6 +16,7 @@ export default () => {
     ui: {
       lng: defaultLanguage,
       state: '',
+      readonly: false,
       selectedPostId: '',
       readedPosts: [],
     },
@@ -26,12 +27,16 @@ export default () => {
     form,
     modal,
     input: form.querySelector('input'),
+    button: form.querySelector('button'),
     feeds: document.querySelector('.feeds'),
     posts: document.querySelector('.posts'),
     feedback: document.querySelector('.feedback'),
   };
   const watchedState = onChange(state, (path) => {
     switch (path) {
+      case 'ui.readonly':
+        view.renderInputForm(elements, watchedState);
+        break;
       case 'ui.selectedPostId':
         view.renderModal(elements, watchedState);
         break;

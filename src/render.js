@@ -65,14 +65,17 @@ export const renderFeedback = (elements, watchedState) => {
 };
 
 export const renderInputForm = (elements, watchedState) => {
-  const { input } = elements;
+  const { input, button } = elements;
   input.classList.remove('is-invalid');
+  button.removeAttribute('disabled');
+  if (watchedState.ui.readonly) {
+    button.setAttribute('disabled', null);
+  }
   if (watchedState.ui.message === 'success') {
     return;
   }
   if (watchedState.ui.message !== '') {
     input.classList.add('is-invalid');
-    input.focus();
   }
 };
 
@@ -140,7 +143,7 @@ export const renderPosts = (elements, watchedState) => {
 export const render = (elements, watchedState) => {
   i18n.changeLanguage(watchedState.ui.lng);
   const schema = yup.string().url();
-  const { form } = elements;
+  const { form, input } = elements;
   form.addEventListener('submit', (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
@@ -156,6 +159,7 @@ export const render = (elements, watchedState) => {
       })
       .then(() => {
         if (!errorState.isPassURL) return null;
+        watchedState.ui.readonly = true;
         return axios.get('https://hexlet-allorigins.herokuapp.com/get', {
           params: {
             url: urlFeed,
@@ -170,7 +174,7 @@ export const render = (elements, watchedState) => {
       })
       .then((response) => {
         if (!errorState.isPassConnection) return null;
-        if (response.status !== 200) {
+        if (response.status === 200 && response.data.status.http_code !== 200) {
           watchedState.ui.message = 'invalid_rss';
           return null;
         }
@@ -190,6 +194,10 @@ export const render = (elements, watchedState) => {
           .slice(0, 30);
         watchedState.ui.message = 'success';
         form.reset();
+      })
+      .then(() => {
+        watchedState.ui.readonly = false;
+        input.focus();
       });
   });
   renderFeedback(elements, watchedState);
