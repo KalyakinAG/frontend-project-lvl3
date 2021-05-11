@@ -201,6 +201,11 @@ export const render = (elements, watchedState) => {
       .then((response) => {
         if (response === null) return;
         const [feed, posts] = parse(response.data.contents);
+        if (feed === undefined) {
+            watchedState.ui.message = 'invalid_url';
+            errorState.isPassURL = false;
+            return null;
+        }
         feed.url = feedURL;
         if (watchedState.feeds.find((itemFeed) => itemFeed.guid === feed.guid) !== undefined) {
           watchedState.ui.message = 'dublicate';
