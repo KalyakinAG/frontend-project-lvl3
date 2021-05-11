@@ -68,10 +68,10 @@ export const renderFeedback = (elements, watchedState) => {
 export const renderInputForm = (elements, watchedState) => {
   const { input, button } = elements;
   input.classList.remove('is-invalid');
-  input.removeAttribute('disabled');
+  input.removeAttribute('readonly');
   button.removeAttribute('disabled');
   if (watchedState.ui.readonly) {
-    input.setAttribute('disabled', null);
+    input.setAttribute('readonly', null);
     button.setAttribute('disabled', null);
   }
   if (watchedState.ui.message === 'success') {
