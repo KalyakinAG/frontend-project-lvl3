@@ -19,8 +19,8 @@ const parse = (data) => {
       pubDate: new Date(item.querySelector('pubDate').textContent),
     }));
     return [feed, posts];
-  } catch(e) {
-    return [undefined, undefined];    
+  } catch (e) {
+    return [undefined, undefined];
   }
 };
 

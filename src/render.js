@@ -1,8 +1,8 @@
 import axios from 'axios';
 import * as yup from 'yup';
 import i18n from 'i18next';
+import _ from 'lodash';
 import parse from './parser.js';
-import _, { reduceRight } from 'lodash';
 
 export const renderModal = (elements, watchedState) => {
   const { modal } = elements;
@@ -157,7 +157,6 @@ export const render = (elements, watchedState) => {
       isPassURL: true,
       isPassConnection: true,
     };
-    console.log(feedURL);
     schema.validate(feedURL)
       .catch((urlError) => {
         [watchedState.ui.message] = urlError.errors;
@@ -165,12 +164,10 @@ export const render = (elements, watchedState) => {
       })
       .then(() => {
         if (!errorState.isPassURL) return null;
-
         if (watchedState.feeds.find((itemFeed) => itemFeed.url === feedURL) !== undefined) {
           watchedState.ui.message = 'dublicate';
           return null;
         }
-    
         return axios.get('https://hexlet-allorigins.herokuapp.com/get', {
           params: {
             url: feedURL,
@@ -178,21 +175,17 @@ export const render = (elements, watchedState) => {
           },
         });
       })
-      .catch((e) => {
+      .catch(() => {
         watchedState.ui.message = 'connection_error';
         errorState.isPassConnection = false;
-        console.log(e);
-        console.log(watchedState);
       })
       .then((response) => {
         if (!errorState.isPassConnection) return null;
         if (_.has(response, 'data.status.http_code') && response.data.status.http_code !== 200) {
-          console.log('data.status.http_code');
           watchedState.ui.message = 'invalid_rss';
           return null;
         }
         if (_.has(response, 'request.response.statusCode') && response.request.response.statusCode !== 200) {
-          console.log('request.response.statusCode');
           watchedState.ui.message = 'invalid_rss';
           return null;
         }
@@ -202,9 +195,9 @@ export const render = (elements, watchedState) => {
         if (response === null) return;
         const [feed, posts] = parse(response.data.contents);
         if (feed === undefined) {
-            watchedState.ui.message = 'invalid_rss';
-            errorState.isPassURL = false;
-            return null;
+          watchedState.ui.message = 'invalid_rss';
+          errorState.isPassURL = false;
+          return;
         }
         feed.url = feedURL;
         if (watchedState.feeds.find((itemFeed) => itemFeed.guid === feed.guid) !== undefined) {
@@ -221,8 +214,7 @@ export const render = (elements, watchedState) => {
       .then(() => {
         watchedState.ui.readonly = false;
         input.focus();
-      })
-      .catch((e) => console.log(e));
+      });
   });
   renderFeedback(elements, watchedState);
   renderInputForm(elements, watchedState);

@@ -110,8 +110,8 @@ export default () => {
           .concat(state.posts)
           .sort((post1, post2) => post2.pubDate - post1.pubDate)
           .slice(0, 30);
-        //setTimeout(loadNewPosts, 5000);
+        setTimeout(loadNewPosts, 5000);
       });
   };
-  //setTimeout(loadNewPosts, 5000);
+  setTimeout(loadNewPosts, 5000);
 };
