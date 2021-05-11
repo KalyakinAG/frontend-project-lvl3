@@ -202,7 +202,7 @@ export const render = (elements, watchedState) => {
         if (response === null) return;
         const [feed, posts] = parse(response.data.contents);
         if (feed === undefined) {
-            watchedState.ui.message = 'invalid_url';
+            watchedState.ui.message = 'invalid_rss';
             errorState.isPassURL = false;
             return null;
         }
