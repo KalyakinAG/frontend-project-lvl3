@@ -5,7 +5,6 @@
   "main": "src/init.js",
   "type": "module",
   "scripts": {
-    "test": "npx -n --experimental-vm-modules jest",
     "build": "webpack"
   },
   "jest": {
@@ -39,8 +38,7 @@
     "eslint-plugin-jest-dom": "^3.8.1",
     "eslint-plugin-testing-library": "^4.2.1",
     "html-webpack-plugin": "^5.0.0",
-    "jest": "^26.6.3",
-    "jest-cli": "^26.6.3",
+    "jest": "^27.0.1",
     "style-loader": "^2.0.0",
     "webpack": "^5.19.0",
     "webpack-cli": "^4.4.0"
