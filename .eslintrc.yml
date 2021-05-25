@@ -1,23 +1,16 @@
 ---
 
 plugins:
-  - jest
   - functional
-  - testing-library
-  - jest-dom
 
 env:
-  jest: true
   browser: true
   es2020: true
 
 extends:
   - 'airbnb-base'
-  - 'plugin:jest/recommended'
   - 'plugin:functional/external-recommended'
   - 'plugin:functional/recommended'
-#  - 'plugin:testing-library/recommended'
-  - "plugin:jest-dom/recommended"
 
 parserOptions:
   ecmaVersion: 2020
