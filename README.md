@@ -16,8 +16,9 @@
 ## Пример работы
 
 Дополнительные фиды для теста:
-https://habr.com/ru/rss/all/all/?fl=ru
-http://lorem-rss.herokuapp.com/feed?unit=second
+
+- https://habr.com/ru/rss/all/all/?fl=ru
+- http://lorem-rss.herokuapp.com/feed?unit=second
 
 [Деплой получившегося приложения на Vercel](https://frontend-project-lvl3-beta-lovat.vercel.app/)
 
