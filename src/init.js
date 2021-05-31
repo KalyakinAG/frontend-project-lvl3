@@ -1,12 +1,10 @@
-import 'bootstrap/dist/css/bootstrap.min.css';
 import onChange from 'on-change';
 import i18n from 'i18next';
 import * as yup from 'yup';
 import axios from 'axios';
 import parse from './parser.js';
 import * as view from './render.js';
-import ru from './locales/ru.js';
-import en from './locales/en.js';
+import { ru, en } from './locales.js';
 
 export default () => {
   const defaultLanguage = 'ru';
