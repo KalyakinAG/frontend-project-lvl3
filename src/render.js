@@ -103,8 +103,8 @@ export const renderPosts = (elements, watchedState) => {
     return;
   }
   const head = document.createElement('h2');
-  head.textContent = 'Посты';
   const list = document.createElement('ul');
+  head.textContent = 'Посты';
   list.classList.add('list-group');
   posts.appendChild(head);
   posts.appendChild(list);
