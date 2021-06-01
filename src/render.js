@@ -1,47 +1,41 @@
-import axios from 'axios';
-import * as yup from 'yup';
+import onChange from 'on-change';
 import i18n from 'i18next';
-import _ from 'lodash';
-import parse from './parser.js';
 
 export const renderModal = (elements, watchedState) => {
   const { modal } = elements;
   if (watchedState.ui.selectedPostId === '') {
-    //  Скрытие модального диалога
-    modal.removeAttribute('aria-modal');
-    modal.setAttribute('style', 'display: none;');
-    modal.setAttribute('aria-hidden', true);
-    modal.classList.remove('show');
     //  Выключения эффекта затемнения основного окна
     document.body.classList.remove('modal-open');
     const fadeModal = document.body.querySelector('.modal-backdrop');
     if (fadeModal !== null) {
       document.body.removeChild(fadeModal);
     }
+    //  Скрытие модального диалога
+    modal.removeAttribute('aria-modal');
+    modal.setAttribute('style', 'display: none;');
+    modal.setAttribute('aria-hidden', true);
+    modal.classList.remove('show');
     return;
   }
-  //  Поиск выбранной новости
-  const isSelectedPost = (item) => item.guid === watchedState.ui.selectedPostId;
-  const selectedPost = watchedState.posts.find(isSelectedPost);
-  //  Заголовок
-  const modalTitle = modal.querySelector('.modal-title');
-  modalTitle.textContent = selectedPost.title;
-  //  Описание
-  const modalBody = modal.querySelector('.modal-body');
-  modalBody.innerHTML = selectedPost.description;
-  //  Настройка перехода по ссылке
-  const buttonFullArticle = modal.querySelector('.btn-primary');
-  buttonFullArticle.setAttribute('href', selectedPost.link);
-  //  Пометка ссылки поста как прочитана
+  //  Снятие выделения с ссылки поста
   const posts = document.querySelector('.posts');
   const href = posts.querySelector(`[data-id='${watchedState.ui.selectedPostId}']`);
   href.classList.remove('font-weight-bold');
   href.classList.add('font-weight-normal');
-  //  Настройка эффекта затемнения основного окна и показ модального диалога
+  //  Настройка эффекта затемнения основного окна
   const modalFade = document.createElement('div');
   modalFade.classList.add('modal-backdrop', 'fade', 'show');
   document.body.appendChild(modalFade);
   document.body.classList.add('modal-open');
+  //  Оформление модального диалога
+  const isSelectedPost = (item) => item.guid === watchedState.ui.selectedPostId;
+  const selectedPost = watchedState.posts.find(isSelectedPost);
+  const modalTitle = modal.querySelector('.modal-title');
+  const modalBody = modal.querySelector('.modal-body');
+  const buttonFullArticle = modal.querySelector('.btn-primary');
+  modalTitle.textContent = selectedPost.title;
+  modalBody.innerHTML = selectedPost.description;
+  buttonFullArticle.setAttribute('href', selectedPost.link);
   modal.removeAttribute('aria-hidden');
   modal.setAttribute('style', 'display: block;');
   modal.setAttribute('aria-modal', true);
@@ -116,8 +110,8 @@ export const renderPosts = (elements, watchedState) => {
   posts.appendChild(list);
   watchedState.posts.forEach((item) => {
     const listItem = document.createElement('li');
-    listItem.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start');
     const href = document.createElement('a');
+    const button = document.createElement('button');
     href.setAttribute('href', item.link);
     href.setAttribute('data-id', item.guid);
     if (watchedState.ui.readedPosts.includes(item.guid)) {
@@ -126,12 +120,8 @@ export const renderPosts = (elements, watchedState) => {
       href.classList.add('font-weight-bold');
     }
     href.textContent = item.title;
-    listItem.appendChild(href);
-    const button = document.createElement('button');
     button.classList.add('btn', 'btn-primary', 'btn-sm');
     button.textContent = i18n.t('viewing');
-    listItem.appendChild(button);
-    list.appendChild(listItem);
     button.addEventListener('click', (e) => {
       e.preventDefault();
       const a = e.target.parentElement.querySelector('a');
@@ -140,84 +130,50 @@ export const renderPosts = (elements, watchedState) => {
         watchedState.ui.readedPosts.push(watchedState.ui.selectedPostId);
       }
     });
+    listItem.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start');
+    listItem.appendChild(href);
+    listItem.appendChild(button);
+    list.appendChild(listItem);
   });
 };
 /* eslint no-param-reassign: ["error", { "props": false }] */
 export const render = (elements, watchedState) => {
-  i18n.changeLanguage(watchedState.ui.lng);
-  const schema = yup.string().url();
-  const { form, input } = elements;
-  form.addEventListener('submit', (e) => {
-    e.preventDefault();
-    if (watchedState.ui.readonly) return;
-    const formData = new FormData(e.target);
-    const feedURL = formData.get('url');
-    watchedState.ui.readonly = true;
-    const errorState = {
-      isPassURL: true,
-      isPassConnection: true,
-    };
-    schema.validate(feedURL)
-      .catch((urlError) => {
-        [watchedState.ui.message] = urlError.errors;
-        errorState.isPassURL = false;
-      })
-      .then(() => {
-        if (!errorState.isPassURL) return null;
-        if (watchedState.feeds.find((itemFeed) => itemFeed.url === feedURL) !== undefined) {
-          watchedState.ui.message = 'dublicate';
-          return null;
-        }
-        return axios.get('https://hexlet-allorigins.herokuapp.com/get', {
-          params: {
-            url: feedURL,
-            disableCache: true,
-          },
-        });
-      })
-      .catch(() => {
-        watchedState.ui.message = 'connection_error';
-        errorState.isPassConnection = false;
-      })
-      .then((response) => {
-        if (!errorState.isPassConnection) return null;
-        if (_.has(response, 'data.status.http_code') && response.data.status.http_code !== 200) {
-          watchedState.ui.message = 'invalid_rss';
-          return null;
-        }
-        if (_.has(response, 'request.response.statusCode') && response.request.response.statusCode !== 200) {
-          watchedState.ui.message = 'invalid_rss';
-          return null;
-        }
-        return response;
-      })
-      .then((response) => {
-        if (response === null) return;
-        const [feed, posts] = parse(response.data.contents);
-        if (feed === undefined) {
-          watchedState.ui.message = 'invalid_rss';
-          errorState.isPassURL = false;
-          return;
-        }
-        feed.url = feedURL;
-        if (watchedState.feeds.find((itemFeed) => itemFeed.guid === feed.guid) !== undefined) {
-          watchedState.ui.message = 'dublicate';
-          return;
-        }
-        watchedState.feeds = [feed].concat(watchedState.feeds);
-        watchedState.posts = posts.concat(watchedState.posts)
-          .sort((post1, post2) => post2.pubDate - post1.pubDate)
-          .slice(0, 30);
-        watchedState.ui.message = 'success';
-        form.reset();
-      })
-      .then(() => {
-        watchedState.ui.readonly = false;
-        input.focus();
-      });
-  });
   renderFeedback(elements, watchedState);
   renderInputForm(elements, watchedState);
   renderPosts(elements, watchedState);
   renderModal(elements, watchedState);
+};
+
+export const getWatchedState = (elements, state) => {
+  const watchedState = onChange(state, (path) => {
+    switch (path) {
+      case 'ui.readonly':
+        renderInputForm(elements, watchedState);
+        break;
+      case 'ui.selectedPostId':
+        renderModal(elements, watchedState);
+        break;
+      case 'ui.message':
+        renderFeedback(elements, watchedState);
+        break;
+      case 'ui.url':
+        renderInputForm(elements, watchedState);
+        break;
+      case 'feeds':
+        renderFeeds(elements, watchedState);
+        break;
+      case 'ui.readedPosts':
+        renderPosts(elements, watchedState);
+        break;
+      case 'posts':
+        renderPosts(elements, watchedState);
+        break;
+      case 'ui.lng':
+        render(elements, watchedState);
+        break;
+      default:
+        break;
+    }
+  });
+  return watchedState;
 };

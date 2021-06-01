@@ -1,7 +1,7 @@
-import onChange from 'on-change';
 import i18n from 'i18next';
 import * as yup from 'yup';
 import axios from 'axios';
+import _ from 'lodash';
 import parse from './parser.js';
 import * as view from './render.js';
 import { ru, en } from './locales.js';
@@ -21,45 +21,17 @@ export default () => {
   };
   const form = document.querySelector('.rss-form');
   const modal = document.querySelector('.modal');
+  const input = form.querySelector('input');
   const elements = {
     form,
     modal,
-    input: form.querySelector('input'),
+    input,
     button: form.querySelector('button'),
     feeds: document.querySelector('.feeds'),
     posts: document.querySelector('.posts'),
     feedback: document.querySelector('.feedback'),
   };
-  const watchedState = onChange(state, (path) => {
-    switch (path) {
-      case 'ui.readonly':
-        view.renderInputForm(elements, watchedState);
-        break;
-      case 'ui.selectedPostId':
-        view.renderModal(elements, watchedState);
-        break;
-      case 'ui.message':
-        view.renderFeedback(elements, watchedState);
-        break;
-      case 'ui.url':
-        view.renderInputForm(elements, watchedState);
-        break;
-      case 'feeds':
-        view.renderFeeds(elements, watchedState);
-        break;
-      case 'ui.readedPosts':
-        view.renderPosts(elements, watchedState);
-        break;
-      case 'posts':
-        view.renderPosts(elements, watchedState);
-        break;
-      case 'ui.lng':
-        view.render(elements, watchedState);
-        break;
-      default:
-        break;
-    }
-  });
+  const watchedState = view.getWatchedState(elements, state);
   const buttonClose = modal.querySelector('.close');
   const buttonCloseSecondary = modal.querySelector('.btn-secondary');
   buttonClose.addEventListener('click', (e) => {
@@ -80,6 +52,94 @@ export default () => {
       url: 'invalid_url',
     },
   });
+
+  const schema = yup.string().url();
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (watchedState.ui.readonly) return;
+    const formData = new FormData(e.target);
+    const feedURL = formData.get('url');
+    watchedState.ui.readonly = true;
+    const errorState = {
+      isPassURL: true,
+      isPassConnection: true,
+    };
+    try {
+      schema.validateSync(feedURL);
+    } catch (urlError) {
+      [watchedState.ui.message] = urlError.errors;
+      errorState.isPassURL = false;
+      watchedState.ui.readonly = false;
+      input.focus();
+      return;
+    }
+
+    if (watchedState.feeds.find((itemFeed) => itemFeed.url === feedURL) !== undefined) {
+      watchedState.ui.message = 'dublicate';
+      watchedState.ui.readonly = false;
+      input.focus();
+      return;
+    }
+
+    axios.get('https://hexlet-allorigins.herokuapp.com/get', {
+      params: {
+        url: feedURL,
+        disableCache: true,
+      },
+    })
+      .catch(() => {
+        watchedState.ui.message = 'connection_error';
+        errorState.isPassConnection = false;
+        watchedState.ui.readonly = false;
+        input.focus();
+      })
+      .then((response) => {
+        if (!errorState.isPassConnection) return null;
+        if (_.has(response, 'data.status.http_code') && response.data.status.http_code !== 200) {
+          watchedState.ui.message = 'invalid_rss';
+          watchedState.ui.readonly = false;
+          input.focus();
+          return null;
+        }
+        if (_.has(response, 'request.response.statusCode') && response.request.response.statusCode !== 200) {
+          watchedState.ui.message = 'invalid_rss';
+          watchedState.ui.readonly = false;
+          input.focus();
+          return null;
+        }
+        return response;
+      })
+      .then((response) => {
+        if (response === null) return;
+        const [feed, posts] = parse(response.data.contents);
+        if (feed === undefined) {
+          watchedState.ui.message = 'invalid_rss';
+          errorState.isPassURL = false;
+          watchedState.ui.readonly = false;
+          input.focus();
+          return;
+        }
+        feed.url = feedURL;
+        if (watchedState.feeds.find((itemFeed) => itemFeed.guid === feed.guid) !== undefined) {
+          watchedState.ui.message = 'dublicate';
+          watchedState.ui.readonly = false;
+          input.focus();
+          return;
+        }
+        watchedState.feeds = [feed].concat(watchedState.feeds);
+        watchedState.posts = posts.concat(watchedState.posts)
+          .sort((post1, post2) => post2.pubDate - post1.pubDate)
+          .slice(0, 30);
+        watchedState.ui.message = 'success';
+        form.reset();
+        watchedState.ui.readonly = false;
+      })
+      .catch(() => {
+        watchedState.ui.readonly = false;
+        input.focus();
+      });
+  });
+
   i18n.init({
     lng: defaultLanguage,
     debug: false,
@@ -106,8 +166,7 @@ export default () => {
           }, [])
           .filter((post) => !state.posts.find((itemPost) => itemPost.guid === post.guid))
           .concat(state.posts)
-          .sort((post1, post2) => post2.pubDate - post1.pubDate)
-          .slice(0, 30);
+          .sort((post1, post2) => post2.pubDate - post1.pubDate);
         setTimeout(loadNewPosts, 5000);
       });
   };
