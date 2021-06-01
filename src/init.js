@@ -6,6 +6,13 @@ import parse from './parser.js';
 import * as view from './render.js';
 import { ru, en } from './locales.js';
 
+const fetch = (url) => axios.get('https://hexlet-allorigins.herokuapp.com/get', {
+  params: {
+    url,
+    disableCache: true,
+  },
+});
+
 export default () => {
   const defaultLanguage = 'ru';
   const state = {
@@ -81,12 +88,7 @@ export default () => {
       return;
     }
 
-    axios.get('https://hexlet-allorigins.herokuapp.com/get', {
-      params: {
-        url: feedURL,
-        disableCache: true,
-      },
-    })
+    fetch(feedURL)
       .catch(() => {
         watchedState.ui.message = 'connection_error';
         errorState.isPassConnection = false;
