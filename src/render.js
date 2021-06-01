@@ -106,8 +106,6 @@ export const renderPosts = (elements, watchedState) => {
   const list = document.createElement('ul');
   head.textContent = 'Посты';
   list.classList.add('list-group');
-  posts.appendChild(head);
-  posts.appendChild(list);
   watchedState.posts.forEach((item) => {
     const listItem = document.createElement('li');
     const href = document.createElement('a');
@@ -135,6 +133,8 @@ export const renderPosts = (elements, watchedState) => {
     listItem.appendChild(button);
     list.appendChild(listItem);
   });
+  posts.appendChild(head);
+  posts.appendChild(list);
 };
 /* eslint no-param-reassign: ["error", { "props": false }] */
 export const render = (elements, watchedState) => {
