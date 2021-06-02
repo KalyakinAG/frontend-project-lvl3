@@ -96,37 +96,29 @@ export default () => {
         input.focus();
       })
       .then((response) => {
-        if (!errorState.isPassConnection) return null;
+        if (!errorState.isPassConnection) throw new Error();
         if (_.has(response, 'data.status.http_code') && response.data.status.http_code !== 200) {
           watchedState.ui.message = 'invalid_rss';
-          watchedState.ui.readonly = false;
-          input.focus();
-          return null;
+          throw new Error();
         }
         if (_.has(response, 'request.response.statusCode') && response.request.response.statusCode !== 200) {
           watchedState.ui.message = 'invalid_rss';
-          watchedState.ui.readonly = false;
-          input.focus();
-          return null;
+          throw new Error();
         }
         return response;
       })
       .then((response) => {
-        if (response === null) return;
+        if (response === null) throw new Error();
         const [feed, posts] = parse(response.data.contents);
         if (feed === undefined) {
           watchedState.ui.message = 'invalid_rss';
           errorState.isPassURL = false;
-          watchedState.ui.readonly = false;
-          input.focus();
-          return;
+          throw new Error();
         }
         feed.url = feedURL;
         if (watchedState.feeds.find((itemFeed) => itemFeed.guid === feed.guid) !== undefined) {
           watchedState.ui.message = 'dublicate';
-          watchedState.ui.readonly = false;
-          input.focus();
-          return;
+          throw new Error();
         }
         watchedState.feeds = [feed].concat(watchedState.feeds);
         watchedState.posts = posts.concat(watchedState.posts)
