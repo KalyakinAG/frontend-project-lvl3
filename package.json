@@ -19,7 +19,6 @@
   "homepage": "https://github.com/KalyakinAG/frontend-project-lvl3#readme",
   "dependencies": {
     "axios": "^0.21.1",
-    "bootstrap": "^4.6.0",
     "i18next": "^20.1.0",
     "lodash": "^4.17.20",
     "on-change": "^2.2.3",
