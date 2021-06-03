@@ -20,7 +20,7 @@ export const renderModal = (elements, watchedState) => {
   //  Снятие выделения с ссылки поста
   const posts = document.querySelector('.posts');
   const href = posts.querySelector(`[data-id='${watchedState.ui.selectedPostId}']`);
-  href.classList.remove('font-weight-bold');
+  href.classList.remove('fw-bold');
   href.classList.add('font-weight-normal');
   //  Настройка эффекта затемнения основного окна
   const modalFade = document.createElement('div');
@@ -115,7 +115,7 @@ export const renderPosts = (elements, watchedState) => {
     if (watchedState.ui.readedPosts.includes(item.guid)) {
       href.classList.add('font-weight-normal');
     } else {
-      href.classList.add('font-weight-bold');
+      href.classList.add('fw-bold');
     }
     href.textContent = item.title;
     button.classList.add('btn', 'btn-primary', 'btn-sm');
