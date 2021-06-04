@@ -21,7 +21,9 @@ export default () => {
     ui: {
       lng: defaultLanguage,
       state: '',
-      readonly: false,
+      form: {
+        readonly: false,
+      },
       selectedPostId: '',
       readedPosts: [],
     },
@@ -54,40 +56,27 @@ export default () => {
       watchedState.ui.selectedPostId = '';
     }
   });
-  yup.setLocale({
-    string: {
-      url: 'invalid_url',
-    },
-  });
 
-  const schema = yup.string().url();
   form.addEventListener('submit', (e) => {
+    const schema = yup.string()
+      .url('invalid_url')
+      .notOneOf(state.feeds.map((feed) => feed.url), 'dublicate');
     e.preventDefault();
     if (watchedState.ui.readonly) return;
     const formData = new FormData(e.target);
     const feedURL = formData.get('url');
     watchedState.ui.readonly = true;
-    const errorState = {
-      isPassURL: true,
-      isPassConnection: true,
-    };
     try {
       schema.validateSync(feedURL);
     } catch (urlError) {
       [watchedState.ui.message] = urlError.errors;
-      errorState.isPassURL = false;
       watchedState.ui.readonly = false;
       input.focus();
       return;
     }
-
-    if (watchedState.feeds.find((itemFeed) => itemFeed.url === feedURL) !== undefined) {
-      watchedState.ui.message = 'dublicate';
-      watchedState.ui.readonly = false;
-      input.focus();
-      return;
-    }
-
+    const errorState = {
+      isPassConnection: true,
+    };
     fetch(feedURL)
       .catch(() => {
         watchedState.ui.message = 'connection_error';
@@ -116,10 +105,6 @@ export default () => {
           throw new Error();
         }
         feed.url = feedURL;
-        if (watchedState.feeds.find((itemFeed) => itemFeed.guid === feed.guid) !== undefined) {
-          watchedState.ui.message = 'dublicate';
-          throw new Error();
-        }
         watchedState.feeds = [feed].concat(watchedState.feeds);
         watchedState.posts = posts.concat(watchedState.posts)
           .sort((post1, post2) => post2.pubDate - post1.pubDate)
@@ -144,6 +129,7 @@ export default () => {
   }).then(() => {
     view.render(elements, watchedState);
   });
+
   const loadNewPosts = () => {
     const promises = state.feeds.map((feed) => axios.get('https://hexlet-allorigins.herokuapp.com/get', {
       params: {

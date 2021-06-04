@@ -64,7 +64,7 @@ export const renderInputForm = (elements, watchedState) => {
   input.classList.remove('is-invalid');
   input.removeAttribute('readonly');
   button.removeAttribute('disabled');
-  if (watchedState.ui.readonly) {
+  if (watchedState.ui.form.readonly) {
     input.setAttribute('readonly', null);
     button.setAttribute('disabled', null);
   }
@@ -147,7 +147,13 @@ export const render = (elements, watchedState) => {
 export const getWatchedState = (elements, state) => {
   const watchedState = onChange(state, (path) => {
     switch (path) {
-      case 'ui.readonly':
+      case 'feeds':
+        renderFeeds(elements, watchedState);
+        break;
+      case 'posts':
+        renderPosts(elements, watchedState);
+        break;
+      case 'ui.form.readonly':
         renderInputForm(elements, watchedState);
         break;
       case 'ui.selectedPostId':
@@ -156,16 +162,7 @@ export const getWatchedState = (elements, state) => {
       case 'ui.message':
         renderFeedback(elements, watchedState);
         break;
-      case 'ui.url':
-        renderInputForm(elements, watchedState);
-        break;
-      case 'feeds':
-        renderFeeds(elements, watchedState);
-        break;
       case 'ui.readedPosts':
-        renderPosts(elements, watchedState);
-        break;
-      case 'posts':
         renderPosts(elements, watchedState);
         break;
       case 'ui.lng':
