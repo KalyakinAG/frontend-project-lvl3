@@ -19,13 +19,13 @@ export default () => {
     feeds: [], //  { title, description, link, url, guid }
     posts: [], //  { title, description, link, guid, feedGuid, pubDate }
     ui: {
-      lng: defaultLanguage,
-      state: '',
       form: {
         readonly: false,
       },
+      state: '',
       selectedPostId: '',
       readedPosts: [],
+      lng: defaultLanguage,
     },
   };
   const form = document.querySelector('.rss-form');
