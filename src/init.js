@@ -62,15 +62,15 @@ export default () => {
       .url('invalid_url')
       .notOneOf(state.feeds.map((feed) => feed.url), 'dublicate');
     e.preventDefault();
-    if (watchedState.ui.readonly) return;
+    if (watchedState.ui.form.readonly) return;
     const formData = new FormData(e.target);
     const feedURL = formData.get('url');
-    watchedState.ui.readonly = true;
+    watchedState.ui.form.readonly = true;
     try {
       schema.validateSync(feedURL);
     } catch (urlError) {
       [watchedState.ui.message] = urlError.errors;
-      watchedState.ui.readonly = false;
+      watchedState.ui.form.readonly = false;
       input.focus();
       return;
     }
@@ -81,7 +81,7 @@ export default () => {
       .catch(() => {
         watchedState.ui.message = 'connection_error';
         errorState.isPassConnection = false;
-        watchedState.ui.readonly = false;
+        watchedState.ui.form.readonly = false;
         input.focus();
       })
       .then((response) => {
@@ -111,10 +111,10 @@ export default () => {
           .slice(0, 30);
         watchedState.ui.message = 'success';
         form.reset();
-        watchedState.ui.readonly = false;
+        watchedState.ui.form.readonly = false;
       })
       .catch(() => {
-        watchedState.ui.readonly = false;
+        watchedState.ui.form.readonly = false;
         input.focus();
       });
   });
