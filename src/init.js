@@ -22,7 +22,7 @@ export default () => {
       form: {
         readonly: false,
       },
-      state: '',
+      message: '',
       selectedPostId: '',
       readedPosts: [],
       lng: defaultLanguage,
