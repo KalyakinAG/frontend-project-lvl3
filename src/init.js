@@ -4,28 +4,29 @@ import axios from 'axios';
 import _ from 'lodash';
 import parse from './parser.js';
 import * as view from './render.js';
-import { ru, en } from './locales.js';
+import { ru, en } from './locales/index.js';
 
-const fetch = (url) => axios.get('https://hexlet-allorigins.herokuapp.com/get', {
-  params: {
-    url,
-    disableCache: true,
-  },
-});
+const addProxy = (url) => `https://hexlet-allorigins.herokuapp.com/get?url=${url}&disableCache=true`;
 
 export default () => {
   const defaultLanguage = 'ru';
   const state = {
     feeds: [], //  { title, description, link, url, guid }
     posts: [], //  { title, description, link, guid, feedGuid, pubDate }
-    ui: {
-      form: {
-        readonly: false,
-      },
-      message: '',
+    lng: defaultLanguage,
+    modal: {
       selectedPostId: '',
+    },
+    form: {
+      valid: false,
+      error: '',
+    },
+    net: {
+      process: '',
+      error: '',
+    },
+    ui: {
       readedPosts: [],
-      lng: defaultLanguage,
     },
   };
   const form = document.querySelector('.rss-form');
@@ -41,80 +42,70 @@ export default () => {
     feedback: document.querySelector('.feedback'),
   };
   const watchedState = view.getWatchedState(elements, state);
-  const buttonClose = modal.querySelector('.close');
-  const buttonCloseSecondary = modal.querySelector('.btn-secondary');
-  buttonClose.addEventListener('click', (e) => {
-    e.preventDefault();
-    watchedState.ui.selectedPostId = '';
-  });
-  buttonCloseSecondary.addEventListener('click', (e) => {
-    e.preventDefault();
-    watchedState.ui.selectedPostId = '';
-  });
-  modal.addEventListener('keydown', (e) => {
-    if (e.keyCode === 27) {
-      watchedState.ui.selectedPostId = '';
-    }
+
+  modal.addEventListener('hide.bs.modal', (e) => {
+    watchedState.modal.selectedPostId = '';
   });
 
   form.addEventListener('submit', (e) => {
-    const schema = yup.string()
-      .url('invalid_url')
-      .notOneOf(state.feeds.map((feed) => feed.url), 'dublicate');
     e.preventDefault();
-    if (watchedState.ui.form.readonly) return;
+    const validateURL = (URL) => {
+      const schema = yup.string()
+        .url('invalid_url')
+        .notOneOf(state.feeds.map((feed) => feed.url), 'dublicate');
+      schema.validateSync(URL);
+    };
     const formData = new FormData(e.target);
     const feedURL = formData.get('url');
-    watchedState.ui.form.readonly = true;
+    watchedState.net.process = 'progress';
     try {
-      schema.validateSync(feedURL);
-    } catch (urlError) {
-      [watchedState.ui.message] = urlError.errors;
-      watchedState.ui.form.readonly = false;
+      validateURL(feedURL);
+    } catch (e) {
+      watchedState.net.process = 'idle';
+      watchedState.net.error = '';
+      [watchedState.form.error] = e.errors;
+      watchedState.form.valid = false;
       input.focus();
       return;
     }
-    const errorState = {
-      isPassConnection: true,
-    };
-    fetch(feedURL)
-      .catch(() => {
-        watchedState.ui.message = 'connection_error';
-        errorState.isPassConnection = false;
-        watchedState.ui.form.readonly = false;
-        input.focus();
-      })
+    axios.get(addProxy(feedURL))
       .then((response) => {
-        if (!errorState.isPassConnection) throw new Error();
+        if (response === null) throw new Error('invalid_rss');
         if (_.has(response, 'data.status.http_code') && response.data.status.http_code !== 200) {
-          watchedState.ui.message = 'invalid_rss';
-          throw new Error();
+          throw new Error('invalid_rss');
         }
         if (_.has(response, 'request.response.statusCode') && response.request.response.statusCode !== 200) {
-          watchedState.ui.message = 'invalid_rss';
-          throw new Error();
+          throw new Error('invalid_rss');
         }
-        return response;
-      })
-      .then((response) => {
-        if (response === null) throw new Error();
         const [feed, posts] = parse(response.data.contents);
         if (feed === undefined) {
-          watchedState.ui.message = 'invalid_rss';
-          errorState.isPassURL = false;
-          throw new Error();
+          throw new Error('invalid_rss');
         }
         feed.url = feedURL;
         watchedState.feeds = [feed].concat(watchedState.feeds);
         watchedState.posts = posts.concat(watchedState.posts)
           .sort((post1, post2) => post2.pubDate - post1.pubDate)
           .slice(0, 30);
-        watchedState.ui.message = 'success';
         form.reset();
-        watchedState.ui.form.readonly = false;
+        watchedState.net.process = 'idle';
+        watchedState.net.error = '';
+        watchedState.form.valid = true;
+        watchedState.form.error = '';
       })
-      .catch(() => {
-        watchedState.ui.form.readonly = false;
+      .catch((e) => {
+        document.e = e;
+        if (e.message === 'Network Error') {
+          watchedState.net.error = 'connection_error';
+          watchedState.net.process = 'idle';
+          watchedState.form.error = '';
+          watchedState.form.valid = true;
+          input.focus();
+          return;
+        }
+        watchedState.net.error = '';
+        watchedState.net.process = 'idle';
+        watchedState.form.error = e.message;
+        watchedState.form.valid = false;
         input.focus();
       });
   });
