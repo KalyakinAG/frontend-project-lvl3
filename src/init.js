@@ -43,19 +43,19 @@ export default () => {
   };
   const watchedState = view.getWatchedState(elements, state);
 
-  modal.addEventListener('hide.bs.modal', (e) => {
+  modal.addEventListener('hide.bs.modal', () => {
     watchedState.modal.selectedPostId = '';
   });
 
-  form.addEventListener('submit', (e) => {
-    e.preventDefault();
+  form.addEventListener('submit', (event) => {
+    event.preventDefault();
     const validateURL = (URL) => {
       const schema = yup.string()
         .url('invalid_url')
         .notOneOf(state.feeds.map((feed) => feed.url), 'dublicate');
       schema.validateSync(URL);
     };
-    const formData = new FormData(e.target);
+    const formData = new FormData(event.target);
     const feedURL = formData.get('url');
     watchedState.net.process = 'progress';
     try {
