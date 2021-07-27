@@ -48,15 +48,12 @@ export const renderProcess = (elements, watchedState) => {
 export const renderForm = (elements, watchedState) => {
   const { input, feedback } = elements;
   input.classList.remove('is-invalid');
-  feedback.classList.remove('text-success', 'text-danger');
+  feedback.classList.remove('text-danger');
   if (watchedState.form.error !== '') {
     input.classList.add('is-invalid');
     feedback.classList.add('text-danger');
     feedback.textContent = i18n.t(watchedState.form.error);
-    return;
   }
-  feedback.classList.add('text-success');
-  feedback.textContent = i18n.t('success');
 };
 
 export const renderFeeds = (elements, watchedState) => {
