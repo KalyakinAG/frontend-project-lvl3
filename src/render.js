@@ -6,11 +6,6 @@ export const renderModal = (elements, watchedState) => {
     return;
   }
   const { modal } = elements;
-  //  Снятие выделения с ссылки поста
-  const posts = document.querySelector('.posts');
-  const href = posts.querySelector(`[data-id='${watchedState.modal.selectedPostId}']`);
-  href.classList.remove('fw-bold');
-  href.classList.add('font-weight-normal');
   //  Оформление модального диалога
   const isSelectedPost = (item) => item.guid === watchedState.modal.selectedPostId;
   const selectedPost = watchedState.posts.find(isSelectedPost);

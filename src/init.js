@@ -77,15 +77,17 @@ export default () => {
         if (_.has(response, 'request.response.statusCode') && response.request.response.statusCode !== 200) {
           throw new Error('invalid_rss');
         }
-        const [feed, posts] = parse(response.data.contents);
+        const [feed, receivedPosts] = parse(response.data.contents);
         if (feed === undefined) {
           throw new Error('invalid_rss');
         }
         feed.url = feedURL;
         watchedState.feeds = [feed].concat(watchedState.feeds);
-        watchedState.posts = posts.concat(watchedState.posts)
-          .sort((post1, post2) => post2.pubDate - post1.pubDate)
-          .slice(0, 30);
+
+        const compare = (receivedPost, oldPost) => receivedPost.guid === oldPost.guid;
+        const newPosts = _.differenceWith(receivedPosts, state.posts, compare);
+        watchedState.posts = [...state.posts, ...newPosts];
+
         form.reset();
         watchedState.net.process = 'idle';
         watchedState.net.error = '';
@@ -122,22 +124,17 @@ export default () => {
   });
 
   const loadNewPosts = () => {
-    const promises = state.feeds.map((feed) => axios.get('https://hexlet-allorigins.herokuapp.com/get', {
-      params: {
-        url: feed.url,
-        disableCache: true,
-      },
-    }));
+    const promises = state.feeds.map((feed) => axios.get(addProxy(feed.url)));
     Promise.all(promises)
       .then((responses) => {
-        watchedState.posts = responses
+        const receivedPosts = responses
           .reduce((posts, response) => {
             const [, currentPosts] = parse(response.data.contents);
             return [...posts, ...currentPosts];
-          }, [])
-          .filter((post) => !state.posts.find((itemPost) => itemPost.guid === post.guid))
-          .concat(state.posts)
-          .sort((post1, post2) => post2.pubDate - post1.pubDate);
+          }, []);
+        const compare = (receivedPost, oldPost) => receivedPost.guid === oldPost.guid;
+        const newPosts = _.differenceWith(receivedPosts, state.posts, compare);
+        watchedState.posts = [...state.posts, ...newPosts];
         setTimeout(loadNewPosts, 5000);
       });
   };
