@@ -1,5 +1,15 @@
-const parse = (data) => {
+import _ from 'lodash';
+
+const parse = (response) => {
   try {
+    if (response === null) throw new Error('invalid_rss');
+    if (_.has(response, 'data.status.http_code') && response.data.status.http_code !== 200) {
+      throw new Error('invalid_rss');
+    }
+    if (_.has(response, 'request.response.statusCode') && response.request.response.statusCode !== 200) {
+      throw new Error('invalid_rss');
+    }
+    const data = response.data.contents;
     const parserDOM = new DOMParser();
     const rss = parserDOM.parseFromString(data, 'application/xml');
     if (rss.documentElement.tagName === 'parsererror') {
@@ -23,7 +33,7 @@ const parse = (data) => {
     }));
     return [feed, posts];
   } catch (e) {
-    return [undefined, undefined];
+    throw new Error('invalid_rss');
   }
 };
 

@@ -23,17 +23,17 @@ export const renderProcess = (elements, watchedState) => {
   input.classList.remove('is-invalid');
   input.removeAttribute('readonly');
   button.removeAttribute('disabled');
-  if (watchedState.net.process === 'progress') {
+  if (watchedState.network.process === 'progress') {
     input.setAttribute('readonly', null);
     button.setAttribute('disabled', null);
     return;
   }
-  if (watchedState.net.error !== '') {
+  if (watchedState.network.error !== '') {
     feedback.classList.add('text-danger');
-    feedback.textContent = i18n.t(watchedState.net.error);
+    feedback.textContent = i18n.t(watchedState.network.error);
     return;
   }
-  if (watchedState.net.process === '') {
+  if (watchedState.network.process === '') {
     return;
   }
   feedback.classList.add('text-success');
@@ -139,10 +139,10 @@ export const getWatchedState = (elements, state) => {
       case 'modal.selectedPostId':
         renderModal(elements, watchedState);
         break;
-      case 'net.process':
+      case 'network.process':
         renderProcess(elements, watchedState);
         break;
-      case 'net.error':
+      case 'network.error':
         renderProcess(elements, watchedState);
         break;
       case 'ui.readedPosts':

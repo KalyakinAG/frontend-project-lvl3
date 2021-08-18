@@ -8,6 +8,13 @@ import { ru, en } from './locales/index.js';
 
 const addProxy = (url) => `https://hexlet-allorigins.herokuapp.com/get?url=${url}&disableCache=true`;
 
+const validateURL = (URL, exceptionURLs) => {
+  const schema = yup.string()
+    .url('invalid_url')
+    .notOneOf(exceptionURLs, 'dublicate');
+  schema.validateSync(URL);
+};
+
 export default () => {
   const defaultLanguage = 'ru';
   const state = {
@@ -21,7 +28,7 @@ export default () => {
       valid: false,
       error: '',
     },
-    net: {
+    network: {
       process: '',
       error: '',
     },
@@ -49,63 +56,43 @@ export default () => {
 
   form.addEventListener('submit', (event) => {
     event.preventDefault();
-    const validateURL = (URL) => {
-      const schema = yup.string()
-        .url('invalid_url')
-        .notOneOf(state.feeds.map((feed) => feed.url), 'dublicate');
-      schema.validateSync(URL);
-    };
     const formData = new FormData(event.target);
     const feedURL = formData.get('url');
-    watchedState.net.process = 'progress';
     try {
-      validateURL(feedURL);
+      validateURL(feedURL, state.feeds.map((feed) => feed.url));
     } catch (e) {
-      watchedState.net.process = 'idle';
-      watchedState.net.error = '';
       [watchedState.form.error] = e.errors;
       watchedState.form.valid = false;
       input.focus();
       return;
     }
+    watchedState.network.process = 'progress';
     axios.get(addProxy(feedURL))
       .then((response) => {
-        if (response === null) throw new Error('invalid_rss');
-        if (_.has(response, 'data.status.http_code') && response.data.status.http_code !== 200) {
-          throw new Error('invalid_rss');
-        }
-        if (_.has(response, 'request.response.statusCode') && response.request.response.statusCode !== 200) {
-          throw new Error('invalid_rss');
-        }
-        const [feed, receivedPosts] = parse(response.data.contents);
-        if (feed === undefined) {
-          throw new Error('invalid_rss');
-        }
+        const [feed, receivedPosts] = parse(response);
         feed.url = feedURL;
         watchedState.feeds = [feed].concat(watchedState.feeds);
-
         const compare = (receivedPost, oldPost) => receivedPost.guid === oldPost.guid;
         const newPosts = _.differenceWith(receivedPosts, state.posts, compare);
         watchedState.posts = [...state.posts, ...newPosts];
-
         form.reset();
-        watchedState.net.process = 'idle';
-        watchedState.net.error = '';
+        watchedState.network.process = 'idle';
+        watchedState.network.error = '';
         watchedState.form.valid = true;
         watchedState.form.error = '';
       })
       .catch((e) => {
         document.e = e;
         if (e.message === 'Network Error') {
-          watchedState.net.error = 'connection_error';
-          watchedState.net.process = 'idle';
+          watchedState.network.error = 'connection_error';
+          watchedState.network.process = 'idle';
           watchedState.form.error = '';
           watchedState.form.valid = true;
           input.focus();
           return;
         }
-        watchedState.net.error = '';
-        watchedState.net.process = 'idle';
+        watchedState.network.error = '';
+        watchedState.network.process = 'idle';
         watchedState.form.error = e.message;
         watchedState.form.valid = false;
         input.focus();
@@ -129,7 +116,7 @@ export default () => {
       .then((responses) => {
         const receivedPosts = responses
           .reduce((posts, response) => {
-            const [, currentPosts] = parse(response.data.contents);
+            const [, currentPosts] = parse(response);
             return [...posts, ...currentPosts];
           }, []);
         const compare = (receivedPost, oldPost) => receivedPost.guid === oldPost.guid;
