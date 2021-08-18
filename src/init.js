@@ -50,22 +50,7 @@ export default () => {
   };
   const watchedState = view.getWatchedState(elements, state);
 
-  modal.addEventListener('hide.bs.modal', () => {
-    watchedState.modal.selectedPostId = '';
-  });
-
-  form.addEventListener('submit', (event) => {
-    event.preventDefault();
-    const formData = new FormData(event.target);
-    const feedURL = formData.get('url');
-    try {
-      validateURL(feedURL, state.feeds.map((feed) => feed.url));
-    } catch (e) {
-      [watchedState.form.error] = e.errors;
-      watchedState.form.valid = false;
-      input.focus();
-      return;
-    }
+  const loadRSS = (feedURL) => {
     watchedState.network.process = 'progress';
     axios.get(addProxy(feedURL))
       .then((response) => {
@@ -97,6 +82,25 @@ export default () => {
         watchedState.form.valid = false;
         input.focus();
       });
+  };
+
+  modal.addEventListener('hide.bs.modal', () => {
+    watchedState.modal.selectedPostId = '';
+  });
+
+  form.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const formData = new FormData(event.target);
+    const feedURL = formData.get('url');
+    try {
+      validateURL(feedURL, state.feeds.map((feed) => feed.url));
+    } catch (e) {
+      [watchedState.form.error] = e.errors;
+      watchedState.form.valid = false;
+      input.focus();
+      return;
+    }
+    loadRSS(feedURL);
   });
 
   i18n.init({
