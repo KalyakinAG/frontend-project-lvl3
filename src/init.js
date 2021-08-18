@@ -57,9 +57,7 @@ export default () => {
         const [feed, receivedPosts] = parse(response);
         feed.url = feedURL;
         watchedState.feeds = [feed].concat(watchedState.feeds);
-        const compare = (receivedPost, oldPost) => receivedPost.guid === oldPost.guid;
-        const newPosts = _.differenceWith(receivedPosts, state.posts, compare);
-        watchedState.posts = [...state.posts, ...newPosts];
+        watchedState.posts = [...state.posts, ...receivedPosts];
         form.reset();
         watchedState.network.process = 'idle';
         watchedState.network.error = '';
