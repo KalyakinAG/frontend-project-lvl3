@@ -15,7 +15,7 @@ const validateURL = (URL, exceptionURLs) => {
   schema.validateSync(URL);
 };
 
-export default () => {
+export default async () => {
   const defaultLanguage = 'ru';
   const state = {
     feeds: [], //  { title, description, link, url, guid }

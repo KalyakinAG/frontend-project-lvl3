@@ -17,27 +17,28 @@ export const renderModal = (elements, watchedState) => {
   buttonFullArticle.setAttribute('href', selectedPost.link);
 };
 
-export const renderProcess = (elements, watchedState) => {
+export const renderNetworkProcess = (elements, watchedState) => {
   const { input, button, feedback } = elements;
   feedback.classList.remove('text-success', 'text-danger');
   input.classList.remove('is-invalid');
   input.removeAttribute('readonly');
   button.removeAttribute('disabled');
-  if (watchedState.network.process === 'progress') {
-    input.setAttribute('readonly', null);
-    button.setAttribute('disabled', null);
-    return;
+  switch (watchedState.network.process) {
+    case 'progress':
+      input.setAttribute('readonly', null);
+      button.setAttribute('disabled', null);
+      break;
+    case 'idle':
+      if (watchedState.network.error !== '') {
+        feedback.classList.add('text-danger');
+        feedback.textContent = i18n.t(watchedState.network.error);
+      } else {
+        feedback.classList.add('text-success');
+        feedback.textContent = i18n.t('success');
+      }
+      break;
+    default:
   }
-  if (watchedState.network.error !== '') {
-    feedback.classList.add('text-danger');
-    feedback.textContent = i18n.t(watchedState.network.error);
-    return;
-  }
-  if (watchedState.network.process === '') {
-    return;
-  }
-  feedback.classList.add('text-success');
-  feedback.textContent = i18n.t('success');
 };
 
 export const renderForm = (elements, watchedState) => {
@@ -115,7 +116,7 @@ export const renderPosts = (elements, watchedState) => {
 };
 /* eslint no-param-reassign: ["error", { "props": false }] */
 export const render = (elements, watchedState) => {
-  renderProcess(elements, watchedState);
+  renderNetworkProcess(elements, watchedState);
   renderForm(elements, watchedState);
   renderPosts(elements, watchedState);
   renderModal(elements, watchedState);
@@ -140,16 +141,13 @@ export const getWatchedState = (elements, state) => {
         renderModal(elements, watchedState);
         break;
       case 'network.process':
-        renderProcess(elements, watchedState);
+        renderNetworkProcess(elements, watchedState);
         break;
       case 'network.error':
-        renderProcess(elements, watchedState);
+        renderNetworkProcess(elements, watchedState);
         break;
       case 'ui.readedPosts':
         renderPosts(elements, watchedState);
-        break;
-      case 'ui.lng':
-        render(elements, watchedState);
         break;
       default:
         break;
