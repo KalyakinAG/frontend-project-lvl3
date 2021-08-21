@@ -62,14 +62,14 @@ export const renderFeeds = (elements, watchedState) => {
   head.textContent = 'Фиды';
   const list = document.createElement('ul');
   list.classList.add('list-group', 'mb-5');
-  feeds.appendChild(head);
-  feeds.appendChild(list);
   watchedState.feeds.forEach((item) => {
     const listItem = document.createElement('li');
     list.appendChild(listItem);
     listItem.innerHTML = `<h3>${item.title}</h3><p>${item.description}</p>`;
     listItem.classList.add('list-group-item');
   });
+  feeds.appendChild(head);
+  feeds.appendChild(list);
 };
 
 export const renderPosts = (elements, watchedState) => {
