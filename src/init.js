@@ -19,7 +19,7 @@ export default async () => {
   const defaultLanguage = 'ru';
   const state = {
     feeds: [], //  { title, description, link, url, guid }
-    posts: [], //  { title, description, link, guid, feedGuid, pubDate }
+    posts: [], //  { title, description, link, guid, pubDate }
     lng: defaultLanguage,
     modal: {
       selectedPostId: '',
@@ -54,10 +54,10 @@ export default async () => {
     watchedState.network.process = 'progress';
     axios.get(addProxy(feedURL))
       .then((response) => {
-        const [feed, receivedPosts] = parse(response);
+        const feed = parse(response);
         feed.url = feedURL;
         watchedState.feeds = [feed].concat(watchedState.feeds);
-        watchedState.posts = [...state.posts, ...receivedPosts];
+        watchedState.posts = [...state.posts, ...feed.posts];
         form.reset();
         watchedState.network.process = 'idle';
         watchedState.network.error = '';
@@ -118,8 +118,8 @@ export default async () => {
       .then((responses) => {
         const receivedPosts = responses
           .reduce((posts, response) => {
-            const [, currentPosts] = parse(response);
-            return [...posts, ...currentPosts];
+            const feed = parse(response);
+            return [...posts, ...feed.posts];
           }, []);
         const compare = (receivedPost, oldPost) => receivedPost.guid === oldPost.guid;
         const newPosts = _.differenceWith(receivedPosts, state.posts, compare);
