@@ -69,15 +69,11 @@ export default async () => {
         if (e.message === 'Network Error') {
           watchedState.network.error = 'connection_error';
           watchedState.network.process = 'idle';
-          watchedState.form.error = '';
-          watchedState.form.valid = true;
           input.focus();
           return;
         }
-        watchedState.network.error = '';
+        watchedState.network.error = e.message;
         watchedState.network.process = 'idle';
-        watchedState.form.error = e.message;
-        watchedState.form.valid = false;
         input.focus();
       });
   };
@@ -92,7 +88,9 @@ export default async () => {
     const feedURL = formData.get('url');
     try {
       validateURL(feedURL, state.feeds.map((feed) => feed.url));
-    } catch (e) {
+      watchedState.form.error = '';
+      watchedState.form.valid = true;
+} catch (e) {
       [watchedState.form.error] = e.errors;
       watchedState.form.valid = false;
       input.focus();
