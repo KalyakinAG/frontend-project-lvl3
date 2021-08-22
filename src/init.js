@@ -61,8 +61,6 @@ export default async () => {
         form.reset();
         watchedState.network.process = 'idle';
         watchedState.network.error = '';
-        watchedState.form.valid = true;
-        watchedState.form.error = '';
       })
       .catch((e) => {
         document.e = e;
@@ -90,7 +88,7 @@ export default async () => {
       validateURL(feedURL, state.feeds.map((feed) => feed.url));
       watchedState.form.error = '';
       watchedState.form.valid = true;
-} catch (e) {
+    } catch (e) {
       [watchedState.form.error] = e.errors;
       watchedState.form.valid = false;
       input.focus();
