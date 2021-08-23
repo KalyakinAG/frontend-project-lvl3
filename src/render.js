@@ -58,18 +58,8 @@ export const renderFeeds = (elements, watchedState) => {
   if (watchedState.feeds.length === 0) {
     return;
   }
-  const head = document.createElement('h2');
-  head.textContent = 'Фиды';
-  const list = document.createElement('ul');
-  list.classList.add('list-group', 'mb-5');
-  watchedState.feeds.forEach((item) => {
-    const listItem = document.createElement('li');
-    list.appendChild(listItem);
-    listItem.innerHTML = `<h3>${item.title}</h3><p>${item.description}</p>`;
-    listItem.classList.add('list-group-item');
-  });
-  feeds.appendChild(head);
-  feeds.appendChild(list);
+  const htmlFeeds = watchedState.feeds.map((feed) => `<li class = "list-group-item"><h3>${feed.title}</h3><p>${feed.description}</p></li>`);
+  feeds.innerHTML = `<h2>Фиды</h2><ul class = "list-group mb-5">${htmlFeeds.join('')}</ul>`;
 };
 
 export const renderPosts = (elements, watchedState) => {
@@ -78,26 +68,16 @@ export const renderPosts = (elements, watchedState) => {
   if (watchedState.posts.length === 0) {
     return;
   }
-  const head = document.createElement('h2');
-  const list = document.createElement('ul');
-  head.textContent = 'Посты';
-  list.classList.add('list-group');
-  watchedState.posts.forEach((item) => {
-    const listItem = document.createElement('li');
-    const href = document.createElement('a');
-    const button = document.createElement('button');
-    href.setAttribute('href', item.link);
-    href.setAttribute('data-id', item.guid);
-    if (watchedState.ui.readedPosts.includes(item.guid)) {
-      href.classList.add('font-weight-normal');
-    } else {
-      href.classList.add('fw-bold');
-    }
-    href.textContent = item.title;
-    button.classList.add('btn', 'btn-primary', 'btn-sm');
-    button.setAttribute('data-bs-toggle', 'modal');
-    button.setAttribute('data-bs-target', '#modal');
-    button.textContent = i18n.t('viewing');
+
+  const htmlList = watchedState.posts.map((post) => {
+    const classHref = watchedState.ui.readedPosts.includes(post.guid) ? 'font-weight-normal' : 'fw-bold';
+    const htmlHref = `<a href = "${post.link}" data-id = "${post.guid}" class = "${classHref}">${post.title}</a>`;
+    const htmlButton = `<button class = "btn btn-primary btn-sm" data-bs-toggle = "modal" data-bs-target = "#modal">${i18n.t('viewing')}</button>`;
+    return `<li class = "list-group-item d-flex justify-content-between align-items-start">${htmlHref}${htmlButton}</li>`;
+  });
+
+  posts.innerHTML = `<h2>Посты</h2><ul class = "list-group">${htmlList.join('')}</ul>`;
+  posts.querySelectorAll('.btn').forEach((button) => {
     button.addEventListener('click', (e) => {
       e.preventDefault();
       const a = e.target.parentElement.querySelector('a');
@@ -106,13 +86,7 @@ export const renderPosts = (elements, watchedState) => {
         watchedState.ui.readedPosts.push(watchedState.modal.selectedPostId);
       }
     });
-    listItem.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start');
-    listItem.appendChild(href);
-    listItem.appendChild(button);
-    list.appendChild(listItem);
   });
-  posts.appendChild(head);
-  posts.appendChild(list);
 };
 /* eslint no-param-reassign: ["error", { "props": false }] */
 export const render = (elements, watchedState) => {
