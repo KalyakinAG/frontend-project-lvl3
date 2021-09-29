@@ -8,11 +8,11 @@ import { ru, en } from './locales/index.js';
 
 const addProxy = (url) => `https://hexlet-allorigins.herokuapp.com/get?url=${url}&disableCache=true`;
 
-const validateURL = (URL, exceptionURLs) => {
+const validateURL = (url, exceptionURLs) => {
   const schema = yup.string()
     .url('invalid_url')
     .notOneOf(exceptionURLs, 'dublicate');
-  schema.validateSync(URL);
+  schema.validateSync(url);
 };
 
 export default async () => {
@@ -63,14 +63,11 @@ export default async () => {
         watchedState.network.error = '';
       })
       .catch((e) => {
-        document.e = e;
         if (e.message === 'Network Error') {
           watchedState.network.error = 'connection_error';
-          watchedState.network.process = 'idle';
-          input.focus();
-          return;
+        } else {
+          watchedState.network.error = e.message;
         }
-        watchedState.network.error = e.message;
         watchedState.network.process = 'idle';
         input.focus();
       });
@@ -97,17 +94,6 @@ export default async () => {
     loadRSS(feedURL);
   });
 
-  i18n.init({
-    lng: defaultLanguage,
-    debug: false,
-    resources: {
-      ru,
-      en,
-    },
-  }).then(() => {
-    view.render(elements, watchedState);
-  });
-
   const loadNewPosts = () => {
     const promises = state.feeds.map((feed) => axios.get(addProxy(feed.url)));
     Promise.all(promises)
@@ -123,5 +109,14 @@ export default async () => {
         setTimeout(loadNewPosts, 5000);
       });
   };
-  setTimeout(loadNewPosts, 5000);
+  return i18n.init({
+    lng: defaultLanguage,
+    debug: false,
+    resources: {
+      ru,
+      en,
+    },
+  }).then(() => {
+    setTimeout(loadNewPosts, 5000);
+  });
 };
