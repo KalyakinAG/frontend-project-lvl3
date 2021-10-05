@@ -10,11 +10,11 @@ import { ru, en } from './locales/index.js';
 
 const addProxy = (url) => `https://hexlet-allorigins.herokuapp.com/get?url=${url}&disableCache=true`;
 
-const validateURL = (url, exceptionURLs) => {
+const validateURL = async (url, exceptionURLs) => {
   const schema = yup.string()
     .url('invalid_url')
     .notOneOf(exceptionURLs, 'dublicate');
-  schema.validateSync(url);
+  return schema.validate(url);
 };
 
 export default async () => {
@@ -77,21 +77,21 @@ export default async () => {
     watchedState.modal.selectedPostId = '';
   });
 
-  form.addEventListener('submit', (event) => {
+  form.addEventListener('submit', async (event) => {
     event.preventDefault();
     const formData = new FormData(event.target);
     const feedURL = formData.get('url');
-    try {
-      validateURL(feedURL, state.feeds.map((feed) => feed.url));
-      watchedState.form.error = '';
-      watchedState.form.valid = true;
-    } catch (e) {
-      [watchedState.form.error] = e.errors;
-      watchedState.form.valid = false;
-      input.focus();
-      return;
-    }
-    loadRSS(feedURL);
+    return validateURL(feedURL, state.feeds.map((feed) => feed.url))
+      .then(() => {
+        watchedState.form.error = '';
+        watchedState.form.valid = true;
+        return loadRSS(feedURL);
+      })
+      .catch((e) => {
+        [watchedState.form.error] = e.errors;
+        watchedState.form.valid = false;
+        input.focus();
+      });
   });
 
   const loadNewPosts = () => {
