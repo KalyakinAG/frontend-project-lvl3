@@ -77,11 +77,11 @@ export default async () => {
     watchedState.modal.selectedPostId = '';
   });
 
-  form.addEventListener('submit', (event) => {
+  form.addEventListener('submit', async (event) => {
     event.preventDefault();
     const formData = new FormData(event.target);
     const feedURL = formData.get('url');
-    validateURL(feedURL, state.feeds.map((feed) => feed.url))
+    return validateURL(feedURL, state.feeds.map((feed) => feed.url))
       .then(() => {
         watchedState.form.error = '';
         watchedState.form.valid = true;
