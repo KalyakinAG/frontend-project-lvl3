@@ -122,5 +122,4 @@ export default async () => {
     loadNewPosts();
   });
   setTimeout(loadNewPosts, 5000);
-  return new Promise();
 };
