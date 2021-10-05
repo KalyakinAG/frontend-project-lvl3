@@ -94,9 +94,9 @@ export default async () => {
       });
   });
 
-  const loadNewPosts = () => {
+  const loadNewPosts = async () => {
     const promises = state.feeds.map((feed) => axios.get(addProxy(feed.url)));
-    Promise.all(promises)
+    return Promise.all(promises)
       .then((responses) => {
         const receivedPosts = responses
           .reduce((posts, response) => {
@@ -109,6 +109,7 @@ export default async () => {
         setTimeout(loadNewPosts, 5000);
       });
   };
+
   watchedState.network.process = 'progress';
   i18n.init({
     lng: 'ru',
@@ -119,6 +120,6 @@ export default async () => {
     },
   }).then(() => {
     watchedState.network.process = 'idle';
-    loadNewPosts();
+    setTimeout(loadNewPosts, 5000);
   });
 };
