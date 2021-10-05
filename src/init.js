@@ -91,6 +91,7 @@ export default async () => {
         const compare = (receivedPost, oldPost) => receivedPost.guid === oldPost.guid;
         const newPosts = _.differenceWith(receivedPosts, state.posts, compare);
         watchedState.posts = [...state.posts, ...newPosts];
+        setTimeout(loadNewPosts, timing);
       });
   };
 
@@ -108,8 +109,7 @@ export default async () => {
         [watchedState.form.error] = e.errors;
         watchedState.form.valid = false;
         input.focus();
-      })
-      .then(() => setTimeout(loadNewPosts, timing));
+      });
   });
 
   watchedState.network.process = 'progress';
@@ -123,5 +123,6 @@ export default async () => {
     },
   }).then(() => {
     watchedState.network.process = 'idle';
+    setTimeout(loadNewPosts, timing);
   });
 };
