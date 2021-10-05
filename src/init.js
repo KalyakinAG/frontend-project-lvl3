@@ -121,5 +121,4 @@ export default async () => {
     watchedState.network.process = 'idle';
     loadNewPosts();
   });
-  setTimeout(loadNewPosts, 5000);
 };
