@@ -70,7 +70,7 @@ export const renderPosts = (elements, watchedState) => {
   }
 
   const htmlList = watchedState.posts.map((post) => {
-    const classHref = watchedState.ui.readedPosts.includes(post.guid) ? 'font-weight-normal' : 'fw-bold';
+    const classHref = watchedState.ui.readedPosts.has(post.guid) ? 'font-weight-normal' : 'fw-bold';
     const htmlHref = `<a href = "${post.link}" data-id = "${post.guid}" class = "${classHref}">${post.title}</a>`;
     const htmlButton = `<button class = "btn btn-primary btn-sm" data-bs-toggle = "modal" data-bs-target = "#modal">${i18n.t('viewing')}</button>`;
     return `<li class = "list-group-item d-flex justify-content-between align-items-start">${htmlHref}${htmlButton}</li>`;
@@ -82,8 +82,8 @@ export const renderPosts = (elements, watchedState) => {
       e.preventDefault();
       const a = e.target.parentElement.querySelector('a');
       watchedState.modal.selectedPostId = a.getAttribute('data-id');
-      if (!watchedState.ui.readedPosts.includes(watchedState.modal.selectedPostId)) {
-        watchedState.ui.readedPosts.push(watchedState.modal.selectedPostId);
+      if (!watchedState.ui.readedPosts.has(watchedState.modal.selectedPostId)) {
+        watchedState.ui.readedPosts.add(watchedState.modal.selectedPostId);
       }
     });
   });

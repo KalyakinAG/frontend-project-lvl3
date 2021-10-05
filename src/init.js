@@ -1,3 +1,5 @@
+import 'bootstrap';
+import 'bootstrap/dist/css/bootstrap.min.css';
 import i18n from 'i18next';
 import * as yup from 'yup';
 import axios from 'axios';
@@ -12,15 +14,13 @@ const validateURL = (url, exceptionURLs) => {
   const schema = yup.string()
     .url('invalid_url')
     .notOneOf(exceptionURLs, 'dublicate');
-  schema.validateSync(url);
+  return schema.validate(url);
 };
 
 export default async () => {
-  const defaultLanguage = 'ru';
   const state = {
     feeds: [], //  { title, description, link, url, guid }
     posts: [], //  { title, description, link, guid, pubDate }
-    lng: defaultLanguage,
     modal: {
       selectedPostId: '',
     },
@@ -33,7 +33,7 @@ export default async () => {
       error: '',
     },
     ui: {
-      readedPosts: [],
+      readedPosts: new Set(),
     },
   };
   const form = document.querySelector('.rss-form');
@@ -50,9 +50,9 @@ export default async () => {
   };
   const watchedState = view.getWatchedState(elements, state);
 
-  const loadRSS = (feedURL) => {
+  const loadRSS = async (feedURL) => {
     watchedState.network.process = 'progress';
-    axios.get(addProxy(feedURL))
+    return axios.get(addProxy(feedURL))
       .then((response) => {
         const feed = parse(response);
         feed.url = feedURL;
@@ -81,17 +81,17 @@ export default async () => {
     event.preventDefault();
     const formData = new FormData(event.target);
     const feedURL = formData.get('url');
-    try {
-      validateURL(feedURL, state.feeds.map((feed) => feed.url));
-      watchedState.form.error = '';
-      watchedState.form.valid = true;
-    } catch (e) {
-      [watchedState.form.error] = e.errors;
-      watchedState.form.valid = false;
-      input.focus();
-      return;
-    }
-    loadRSS(feedURL);
+    validateURL(feedURL, state.feeds.map((feed) => feed.url))
+      .then(() => {
+        watchedState.form.error = '';
+        watchedState.form.valid = true;
+        loadRSS(feedURL);
+      })
+      .catch((e) => {
+        [watchedState.form.error] = e.errors;
+        watchedState.form.valid = false;
+        input.focus();
+      });
   });
 
   const loadNewPosts = () => {
@@ -109,14 +109,18 @@ export default async () => {
         setTimeout(loadNewPosts, 5000);
       });
   };
-  return i18n.init({
-    lng: defaultLanguage,
+  watchedState.network.process = 'progress';
+  i18n.init({
+    lng: 'ru',
     debug: false,
     resources: {
       ru,
       en,
     },
   }).then(() => {
-    setTimeout(loadNewPosts, 5000);
+    watchedState.network.process = 'idle';
+    loadNewPosts();
   });
+  setTimeout(loadNewPosts, 5000);
+  return new Promise();
 };
