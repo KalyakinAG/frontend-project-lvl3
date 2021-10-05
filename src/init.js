@@ -1,5 +1,3 @@
-import 'bootstrap';
-import 'bootstrap/dist/css/bootstrap.min.css';
 import i18n from 'i18next';
 import * as yup from 'yup';
 import axios from 'axios';
@@ -10,17 +8,19 @@ import { ru, en } from './locales/index.js';
 
 const addProxy = (url) => `https://hexlet-allorigins.herokuapp.com/get?url=${url}&disableCache=true`;
 
-const validateURL = async (url, exceptionURLs) => {
+const validateURL = (url, exceptionURLs) => {
   const schema = yup.string()
     .url('invalid_url')
     .notOneOf(exceptionURLs, 'dublicate');
-  return schema.validate(url);
+  schema.validateSync(url);
 };
 
 export default async () => {
+  const defaultLanguage = 'ru';
   const state = {
     feeds: [], //  { title, description, link, url, guid }
     posts: [], //  { title, description, link, guid, pubDate }
+    lng: defaultLanguage,
     modal: {
       selectedPostId: '',
     },
@@ -33,7 +33,7 @@ export default async () => {
       error: '',
     },
     ui: {
-      readedPosts: new Set(),
+      readedPosts: [],
     },
   };
   const form = document.querySelector('.rss-form');
@@ -50,9 +50,9 @@ export default async () => {
   };
   const watchedState = view.getWatchedState(elements, state);
 
-  const loadRSS = async (feedURL) => {
+  const loadRSS = (feedURL) => {
     watchedState.network.process = 'progress';
-    return axios.get(addProxy(feedURL))
+    axios.get(addProxy(feedURL))
       .then((response) => {
         const feed = parse(response);
         feed.url = feedURL;
@@ -77,21 +77,21 @@ export default async () => {
     watchedState.modal.selectedPostId = '';
   });
 
-  form.addEventListener('submit', async (event) => {
+  form.addEventListener('submit', (event) => {
     event.preventDefault();
     const formData = new FormData(event.target);
     const feedURL = formData.get('url');
-    return validateURL(feedURL, state.feeds.map((feed) => feed.url))
-      .then(() => {
-        watchedState.form.error = '';
-        watchedState.form.valid = true;
-        return loadRSS(feedURL);
-      })
-      .catch((e) => {
-        [watchedState.form.error] = e.errors;
-        watchedState.form.valid = false;
-        input.focus();
-      });
+    try {
+      validateURL(feedURL, state.feeds.map((feed) => feed.url));
+      watchedState.form.error = '';
+      watchedState.form.valid = true;
+    } catch (e) {
+      [watchedState.form.error] = e.errors;
+      watchedState.form.valid = false;
+      input.focus();
+      return;
+    }
+    loadRSS(feedURL);
   });
 
   const loadNewPosts = () => {
@@ -109,16 +109,14 @@ export default async () => {
         setTimeout(loadNewPosts, 5000);
       });
   };
-  watchedState.network.process = 'progress';
-  i18n.init({
-    lng: 'ru',
+  return i18n.init({
+    lng: defaultLanguage,
     debug: false,
     resources: {
       ru,
       en,
     },
   }).then(() => {
-    watchedState.network.process = 'idle';
-    loadNewPosts();
+    setTimeout(loadNewPosts, 5000);
   });
 };
