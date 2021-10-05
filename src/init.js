@@ -10,7 +10,7 @@ import { ru, en } from './locales/index.js';
 
 const addProxy = (url) => `https://hexlet-allorigins.herokuapp.com/get?url=${url}&disableCache=true`;
 
-const validateURL = (url, exceptionURLs) => {
+const validateURL = async (url, exceptionURLs) => {
   const schema = yup.string()
     .url('invalid_url')
     .notOneOf(exceptionURLs, 'dublicate');
