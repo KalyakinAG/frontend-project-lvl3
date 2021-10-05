@@ -77,23 +77,6 @@ export default async () => {
     watchedState.modal.selectedPostId = '';
   });
 
-  form.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    const formData = new FormData(event.target);
-    const feedURL = formData.get('url');
-    return validateURL(feedURL, state.feeds.map((feed) => feed.url))
-      .then(() => {
-        watchedState.form.error = '';
-        watchedState.form.valid = true;
-        return loadRSS(feedURL);
-      })
-      .catch((e) => {
-        [watchedState.form.error] = e.errors;
-        watchedState.form.valid = false;
-        input.focus();
-      });
-  });
-
   const timing = 5000;
 
   const loadNewPosts = async () => {
@@ -108,11 +91,29 @@ export default async () => {
         const compare = (receivedPost, oldPost) => receivedPost.guid === oldPost.guid;
         const newPosts = _.differenceWith(receivedPosts, state.posts, compare);
         watchedState.posts = [...state.posts, ...newPosts];
-        setTimeout(loadNewPosts, timing);
       });
   };
 
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const formData = new FormData(event.target);
+    const feedURL = formData.get('url');
+    return validateURL(feedURL, state.feeds.map((feed) => feed.url))
+      .then(() => {
+        watchedState.form.error = '';
+        watchedState.form.valid = true;
+        return loadRSS(feedURL);
+      })
+      .catch((e) => {
+        [watchedState.form.error] = e.errors;
+        watchedState.form.valid = false;
+        input.focus();
+      })
+      .then(() => setTimeout(loadNewPosts, timing));
+  });
+
   watchedState.network.process = 'progress';
+
   i18n.init({
     lng: 'ru',
     debug: false,
@@ -122,6 +123,5 @@ export default async () => {
     },
   }).then(() => {
     watchedState.network.process = 'idle';
-    setTimeout(loadNewPosts, timing);
   });
 };
