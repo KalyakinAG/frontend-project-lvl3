@@ -123,6 +123,6 @@ export default async () => {
     },
   }).then(() => {
     watchedState.network.process = 'idle';
-    setTimeout(loadNewPosts, timing);
+    loadNewPosts();
   });
 };
