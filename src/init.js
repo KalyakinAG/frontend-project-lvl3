@@ -112,7 +112,7 @@ export default async () => {
       });
   });
 
-  watchedState.network.process = 'progress';
+  //watchedState.network.process = 'progress';
 
   i18n.init({
     lng: 'ru',
@@ -122,7 +122,7 @@ export default async () => {
       en,
     },
   }).then(() => {
-    watchedState.network.process = 'idle';
+    //watchedState.network.process = 'idle';
     loadNewPosts();
   });
 };
