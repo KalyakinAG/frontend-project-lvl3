@@ -112,8 +112,6 @@ export default async () => {
       });
   });
 
-  watchedState.network.process = 'idle';
-
   i18n.init({
     lng: 'ru',
     debug: false,
