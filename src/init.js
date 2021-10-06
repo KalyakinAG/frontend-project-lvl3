@@ -63,10 +63,12 @@ export default async () => {
         watchedState.network.error = '';
       })
       .catch((e) => {
-        if (e.message === 'Network Error') {
+        if (e.name === 'parse_error') {
+          watchedState.network.error = e.message;
+        } else if (e.message === 'Network Error') {
           watchedState.network.error = 'connection_error';
         } else {
-          watchedState.network.error = e.message;
+          throw e;
         }
         watchedState.network.process = 'idle';
         input.focus();
