@@ -23,9 +23,7 @@ const parse = (response) => {
     }));
     return feed;
   } catch (e) {
-    const error = new Error('invalid_rss');
-    error.name = 'parse_error';
-    throw error;
+    throw new Error('invalid_rss');
   }
 };
 

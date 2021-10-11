@@ -88,13 +88,6 @@ export const renderPosts = (elements, watchedState) => {
     });
   });
 };
-/* eslint no-param-reassign: ["error", { "props": false }] */
-export const render = (elements, watchedState) => {
-  renderNetworkProcess(elements, watchedState);
-  renderForm(elements, watchedState);
-  renderPosts(elements, watchedState);
-  renderModal(elements, watchedState);
-};
 
 export const getWatchedState = (elements, state) => {
   const watchedState = onChange(state, (path) => {
@@ -103,11 +96,10 @@ export const getWatchedState = (elements, state) => {
         renderFeeds(elements, watchedState);
         break;
       case 'posts':
+      case 'ui.readedPosts':
         renderPosts(elements, watchedState);
         break;
       case 'form.valid':
-        renderForm(elements, watchedState);
-        break;
       case 'form.error':
         renderForm(elements, watchedState);
         break;
@@ -115,13 +107,8 @@ export const getWatchedState = (elements, state) => {
         renderModal(elements, watchedState);
         break;
       case 'network.process':
-        renderNetworkProcess(elements, watchedState);
-        break;
       case 'network.error':
         renderNetworkProcess(elements, watchedState);
-        break;
-      case 'ui.readedPosts':
-        renderPosts(elements, watchedState);
         break;
       default:
         break;

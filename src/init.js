@@ -1,5 +1,4 @@
 import 'bootstrap';
-import 'bootstrap/dist/css/bootstrap.min.css';
 import i18n from 'i18next';
 import * as yup from 'yup';
 import axios from 'axios';
@@ -63,7 +62,7 @@ export default async () => {
         watchedState.network.error = '';
       })
       .catch((e) => {
-        if (e.name === 'parse_error') {
+        if (e.message === 'invalid_rss') {
           watchedState.network.error = e.message;
         } else if (e.message === 'Network Error') {
           watchedState.network.error = 'connection_error';
@@ -75,11 +74,7 @@ export default async () => {
       });
   };
 
-  modal.addEventListener('hide.bs.modal', () => {
-    watchedState.modal.selectedPostId = '';
-  });
-
-  const timing = 5000;
+  const postLoadingInterval = 5000;
 
   const loadNewPosts = async () => {
     const promises = state.feeds.map((feed) => axios.get(addProxy(feed.url)));
@@ -93,35 +88,39 @@ export default async () => {
         const compare = (receivedPost, oldPost) => receivedPost.guid === oldPost.guid;
         const newPosts = _.differenceWith(receivedPosts, state.posts, compare);
         watchedState.posts = [...state.posts, ...newPosts];
-        setTimeout(loadNewPosts, timing);
+        setTimeout(loadNewPosts, postLoadingInterval);
       });
   };
 
-  form.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    const formData = new FormData(event.target);
-    const feedURL = formData.get('url');
-    return validateURL(feedURL, state.feeds.map((feed) => feed.url))
-      .then(() => {
-        watchedState.form.error = '';
-        watchedState.form.valid = true;
-        return loadRSS(feedURL);
-      })
-      .catch((e) => {
-        [watchedState.form.error] = e.errors;
-        watchedState.form.valid = false;
-        input.focus();
-      });
-  });
-
   i18n.init({
     lng: 'ru',
-    debug: false,
     resources: {
       ru,
       en,
     },
-  }).then(() => {
-    loadNewPosts();
-  });
+  })
+    .then(() => {
+      modal.addEventListener('hide.bs.modal', () => {
+        watchedState.modal.selectedPostId = '';
+      });
+      form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const formData = new FormData(event.target);
+        const feedURL = formData.get('url');
+        return validateURL(feedURL, state.feeds.map((feed) => feed.url))
+          .then(() => {
+            watchedState.form.error = '';
+            watchedState.form.valid = true;
+            return loadRSS(feedURL);
+          })
+          .catch((e) => {
+            [watchedState.form.error] = e.errors;
+            watchedState.form.valid = false;
+            input.focus();
+          });
+      });
+    })
+    .then(() => {
+      loadNewPosts();
+    });
 };
