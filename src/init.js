@@ -67,7 +67,7 @@ export default async () => {
         } else if (e.message === 'Network Error') {
           watchedState.network.error = 'connection_error';
         } else {
-          throw e;
+          watchedState.network.error = e.message;
         }
         watchedState.network.process = 'idle';
         input.focus();
