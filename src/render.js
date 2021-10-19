@@ -1,5 +1,4 @@
 import onChange from 'on-change';
-import i18n from 'i18next';
 
 export const renderModal = (elements, watchedState) => {
   if (watchedState.modal.selectedPostId === '') {
@@ -31,10 +30,10 @@ export const renderNetworkProcess = (elements, watchedState) => {
     case 'idle':
       if (watchedState.network.error !== '') {
         feedback.classList.add('text-danger');
-        feedback.textContent = i18n.t(watchedState.network.error);
+        feedback.textContent = watchedState.i18n.t(watchedState.network.error);
       } else {
         feedback.classList.add('text-success');
-        feedback.textContent = i18n.t('success');
+        feedback.textContent = watchedState.i18n.t('success');
       }
       break;
     default:
@@ -48,7 +47,7 @@ export const renderForm = (elements, watchedState) => {
   if (watchedState.form.error !== '') {
     input.classList.add('is-invalid');
     feedback.classList.add('text-danger');
-    feedback.textContent = i18n.t(watchedState.form.error);
+    feedback.textContent = watchedState.i18n.t(watchedState.form.error);
   }
 };
 
@@ -69,10 +68,11 @@ export const renderPosts = (elements, watchedState) => {
     return;
   }
 
+  const capture = watchedState.i18n.t('viewing');
   const htmlList = watchedState.posts.map((post) => {
     const classHref = watchedState.ui.readedPosts.has(post.guid) ? 'font-weight-normal' : 'fw-bold';
     const htmlHref = `<a href = "${post.link}" data-id = "${post.guid}" class = "${classHref}">${post.title}</a>`;
-    const htmlButton = `<button class = "btn btn-primary btn-sm" data-bs-toggle = "modal" data-bs-target = "#modal">${i18n.t('viewing')}</button>`;
+    const htmlButton = `<button class = "btn btn-primary btn-sm" data-bs-toggle = "modal" data-bs-target = "#modal">${capture}</button>`;
     return `<li class = "list-group-item d-flex justify-content-between align-items-start">${htmlHref}${htmlButton}</li>`;
   });
 

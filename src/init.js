@@ -1,5 +1,5 @@
 import 'bootstrap';
-import i18n from 'i18next';
+import i18next from 'i18next';
 import * as yup from 'yup';
 import axios from 'axios';
 import _ from 'lodash';
@@ -18,6 +18,7 @@ const validateURL = async (url, exceptionURLs) => {
 
 export default async () => {
   const state = {
+    i18n: null,
     feeds: [], //  { title, description, link, url, guid }
     posts: [], //  { title, description, link, guid, pubDate }
     modal: {
@@ -92,7 +93,8 @@ export default async () => {
       });
   };
 
-  i18n.init({
+  state.i18n = i18next.createInstance();
+  state.i18n.init({
     lng: 'ru',
     resources: {
       ru,
