@@ -1,7 +1,7 @@
 import onChange from 'on-change';
 
 export const renderModal = (elements, watchedState) => {
-  if (watchedState.modal.selectedPostId === '') {
+  if (watchedState.modal.selectedPostId === null) {
     return;
   }
   const { modal } = elements;

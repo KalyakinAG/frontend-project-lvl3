@@ -22,7 +22,7 @@ export default async () => {
     feeds: [], //  { title, description, link, url, guid }
     posts: [], //  { title, description, link, guid, pubDate }
     modal: {
-      selectedPostId: '',
+      selectedPostId: null,
     },
     form: {
       valid: false,
@@ -103,7 +103,7 @@ export default async () => {
   })
     .then(() => {
       modal.addEventListener('hide.bs.modal', () => {
-        watchedState.modal.selectedPostId = '';
+        watchedState.modal.selectedPostId = null;
       });
       form.addEventListener('submit', async (event) => {
         event.preventDefault();
