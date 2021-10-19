@@ -1,4 +1,5 @@
 import onChange from 'on-change';
+import { htmlEscape } from 'escape-goat';
 
 export const renderModal = (elements, watchedState) => {
   if (watchedState.modal.selectedPostId === null) {
@@ -57,7 +58,7 @@ export const renderFeeds = (elements, watchedState) => {
   if (watchedState.feeds.length === 0) {
     return;
   }
-  const htmlFeeds = watchedState.feeds.map((feed) => `<li class = "list-group-item"><h3>${feed.title}</h3><p>${feed.description}</p></li>`);
+  const htmlFeeds = watchedState.feeds.map((feed) => `<li class = "list-group-item"><h3>${htmlEscape(feed.title)}</h3><p>${htmlEscape(feed.description)}</p></li>`);
   feeds.innerHTML = `<h2>Фиды</h2><ul class = "list-group mb-5">${htmlFeeds.join('')}</ul>`;
 };
 
@@ -71,7 +72,7 @@ export const renderPosts = (elements, watchedState) => {
   const capture = watchedState.i18n.t('viewing');
   const htmlList = watchedState.posts.map((post) => {
     const classHref = watchedState.ui.readedPosts.has(post.guid) ? 'font-weight-normal' : 'fw-bold';
-    const htmlHref = `<a href = "${post.link}" data-id = "${post.guid}" class = "${classHref}">${post.title}</a>`;
+    const htmlHref = `<a href = "${post.link}" data-id = "${post.guid}" class = "${classHref}">${htmlEscape(post.title)}</a>`;
     const htmlButton = `<button class = "btn btn-primary btn-sm" data-bs-toggle = "modal" data-bs-target = "#modal">${capture}</button>`;
     return `<li class = "list-group-item d-flex justify-content-between align-items-start">${htmlHref}${htmlButton}</li>`;
   });
