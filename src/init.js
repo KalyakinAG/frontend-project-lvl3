@@ -70,9 +70,7 @@ export default async () => {
         watchedState.network.error = '';
       })
       .catch((e) => {
-        if (e.message === 'invalid_rss') {
-          watchedState.network.error = e.message;
-        } else if (e.message === 'Network Error') {
+        if (e.message === 'Network Error') {
           watchedState.network.error = 'connection_error';
         } else {
           watchedState.network.error = e.message;
@@ -97,11 +95,19 @@ export default async () => {
         const newPosts = _.differenceWith(receivedPosts, state.posts, compare);
         watchedState.posts = [...state.posts, ...newPosts];
         setTimeout(loadNewPosts, postLoadingInterval);
+      })
+      .catch((e) => {
+        if (e.message === 'Network Error') {
+          watchedState.network.error = 'connection_error';
+        } else {
+          watchedState.network.error = e.message;
+        }
       });
   };
 
   state.i18n = i18next.createInstance();
-  state.i18n.init({
+
+  return state.i18n.init({
     lng: 'ru',
     resources: {
       ru,
