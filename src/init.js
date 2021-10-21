@@ -54,9 +54,7 @@ export default async () => {
   modal.addEventListener('show.bs.modal', (e) => {
     const a = e.relatedTarget.parentElement.querySelector('a');
     watchedState.modal.selectedPostId = a.getAttribute('data-id');
-    if (!watchedState.ui.readedPosts.has(watchedState.modal.selectedPostId)) {
-      watchedState.ui.readedPosts.add(watchedState.modal.selectedPostId);
-    }
+    watchedState.ui.readedPosts.add(watchedState.modal.selectedPostId);
   });
 
   const loadRSS = async (feedURL) => {
