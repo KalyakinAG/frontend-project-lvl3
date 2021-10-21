@@ -3,9 +3,6 @@ const parse = (response) => {
     const data = response.data.contents;
     const parserDOM = new DOMParser();
     const rss = parserDOM.parseFromString(data, 'application/xml');
-    if (rss.documentElement.tagName === 'parsererror') {
-      throw new Error('parsererror');
-    }
     const channel = rss.querySelector('channel');
     const feed = {
       title: channel.querySelector('title').textContent,

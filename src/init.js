@@ -67,7 +67,7 @@ export default async () => {
         watchedState.posts = [...state.posts, ...feed.posts];
         form.reset();
         watchedState.network.process = 'idle';
-        watchedState.network.error = '';
+        watchedState.network.error = null;
       })
       .catch((e) => {
         if (e.message === 'Network Error') {
@@ -124,7 +124,7 @@ export default async () => {
         const feedURL = formData.get('url');
         return validateURL(feedURL, state.feeds.map((feed) => feed.url))
           .then(() => {
-            watchedState.form.error = '';
+            watchedState.form.error = null;
             watchedState.form.valid = true;
             return loadRSS(feedURL);
           })

@@ -29,7 +29,7 @@ export const renderNetworkProcess = (elements, watchedState) => {
       button.setAttribute('disabled', null);
       break;
     case 'idle':
-      if (watchedState.network.error !== '') {
+      if (watchedState.network.error !== null) {
         feedback.classList.add('text-danger');
         feedback.textContent = watchedState.i18n.t(watchedState.network.error);
       } else {
@@ -45,7 +45,7 @@ export const renderForm = (elements, watchedState) => {
   const { input, feedback } = elements;
   input.classList.remove('is-invalid');
   feedback.classList.remove('text-danger');
-  if (watchedState.form.error !== '') {
+  if (watchedState.form.error !== null) {
     input.classList.add('is-invalid');
     feedback.classList.add('text-danger');
     feedback.textContent = watchedState.i18n.t(watchedState.form.error);
