@@ -1,5 +1,10 @@
 import onChange from 'on-change';
-import { htmlEscape } from 'escape-goat';
+
+const htmlEscape = (str) => {
+  const temp = document.createElement('div');
+  temp.textContent = str;
+  return temp.innerHTML;
+};
 
 export const renderModal = (elements, watchedState) => {
   if (watchedState.modal.selectedPostId === null) {

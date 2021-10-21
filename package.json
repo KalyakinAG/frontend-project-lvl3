@@ -23,7 +23,6 @@
     "@popperjs/core": "^2.9.3",
     "axios": "^0.21.1",
     "bootstrap": "^5.1.0",
-    "escape-goat": "^4.0.0",
     "i18next": "^20.1.0",
     "lodash": "^4.17.20",
     "on-change": "^2.2.3",
