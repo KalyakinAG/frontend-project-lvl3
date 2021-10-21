@@ -7,5 +7,7 @@ export default {
     invalid_rss: 'Ресурс не содержит валидный RSS',
     viewing: 'Просмотр',
     connection_error: 'Ошибка сети',
+    posts: 'Посты',
+    feeds: 'Фиды',
   },
 };
