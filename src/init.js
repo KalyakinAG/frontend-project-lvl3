@@ -48,7 +48,16 @@ export default async () => {
     posts: document.querySelector('.posts'),
     feedback: document.querySelector('.feedback'),
   };
+
   const watchedState = view.getWatchedState(elements, state);
+
+  modal.addEventListener('show.bs.modal', (e) => {
+    const a = e.relatedTarget.parentElement.querySelector('a');
+    watchedState.modal.selectedPostId = a.getAttribute('data-id');
+    if (!watchedState.ui.readedPosts.has(watchedState.modal.selectedPostId)) {
+      watchedState.ui.readedPosts.add(watchedState.modal.selectedPostId);
+    }
+  });
 
   const loadRSS = async (feedURL) => {
     watchedState.network.process = 'progress';

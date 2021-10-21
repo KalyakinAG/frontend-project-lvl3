@@ -78,16 +78,6 @@ export const renderPosts = (elements, watchedState) => {
   });
 
   posts.innerHTML = `<h2>Посты</h2><ul class = "list-group">${htmlList.join('')}</ul>`;
-  posts.querySelectorAll('.btn').forEach((button) => {
-    button.addEventListener('click', (e) => {
-      e.preventDefault();
-      const a = e.target.parentElement.querySelector('a');
-      watchedState.modal.selectedPostId = a.getAttribute('data-id');
-      if (!watchedState.ui.readedPosts.has(watchedState.modal.selectedPostId)) {
-        watchedState.ui.readedPosts.add(watchedState.modal.selectedPostId);
-      }
-    });
-  });
 };
 
 export const getWatchedState = (elements, state) => {
