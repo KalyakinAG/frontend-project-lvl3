@@ -84,17 +84,17 @@ export default async () => {
   const postLoadingInterval = 5000;
 
   const loadNewPosts = async () => {
-    const promises = state.feeds.map((feed) => axios.get(addProxy(feed.url)));
+    const promises = state.feeds.map(
+      (feed) => axios.get(addProxy(feed.url))
+        .then((response) => {
+          const rss = parse(response);
+          const compare = (receivedPost, oldPost) => receivedPost.link === oldPost.link;
+          const newPosts = _.differenceWith(rss.posts, state.posts, compare);
+          watchedState.posts = [...state.posts, ...newPosts];
+        }),
+    );
     return Promise.all(promises)
-      .then((responses) => {
-        const receivedPosts = responses
-          .reduce((posts, response) => {
-            const feed = parse(response);
-            return [...posts, ...feed.posts];
-          }, []);
-        const compare = (receivedPost, oldPost) => receivedPost.link === oldPost.link;
-        const newPosts = _.differenceWith(receivedPosts, state.posts, compare);
-        watchedState.posts = [...state.posts, ...newPosts];
+      .then(() => {
         setTimeout(loadNewPosts, postLoadingInterval);
       })
       .catch((e) => {

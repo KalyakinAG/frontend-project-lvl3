@@ -7,5 +7,7 @@ export default {
     invalid_rss: 'The resource does not contain a valid RSS',
     viewing: 'Viewing',
     connection_error: 'Network Error',
+    posts: 'Posts',
+    feeds: 'Feeds',
   },
 };

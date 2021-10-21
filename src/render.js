@@ -64,7 +64,7 @@ export const renderFeeds = (elements, watchedState) => {
     return;
   }
   const htmlFeeds = watchedState.feeds.map((feed) => `<li class = "list-group-item"><h3>${htmlEscape(feed.title)}</h3><p>${htmlEscape(feed.description)}</p></li>`);
-  feeds.innerHTML = `<h2>Фиды</h2><ul class = "list-group mb-5">${htmlFeeds.join('')}</ul>`;
+  feeds.innerHTML = `<h2>${watchedState.i18n.t('feeds')}</h2><ul class = "list-group mb-5">${htmlFeeds.join('')}</ul>`;
 };
 
 export const renderPosts = (elements, watchedState) => {
@@ -82,7 +82,7 @@ export const renderPosts = (elements, watchedState) => {
     return `<li class = "list-group-item d-flex justify-content-between align-items-start">${htmlHref}${htmlButton}</li>`;
   });
 
-  posts.innerHTML = `<h2>Посты</h2><ul class = "list-group">${htmlList.join('')}</ul>`;
+  posts.innerHTML = `<h2>${watchedState.i18n.t('posts')}</h2><ul class = "list-group">${htmlList.join('')}</ul>`;
 };
 
 export const getWatchedState = (elements, state) => {
