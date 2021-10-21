@@ -19,8 +19,8 @@ const validateURL = async (url, exceptionURLs) => {
 export default async () => {
   const state = {
     i18n: null,
-    feeds: [], //  { title, description, link, url, guid }
-    posts: [], //  { title, description, link, guid, pubDate }
+    feeds: [], //  { title, description, link, url }
+    posts: [], //  { title, description, link, pubDate }
     modal: {
       selectedPostId: null,
     },
@@ -66,6 +66,7 @@ export default async () => {
         watchedState.feeds = [feed].concat(watchedState.feeds);
         watchedState.posts = [...state.posts, ...feed.posts];
         form.reset();
+        input.focus();
         watchedState.network.process = 'idle';
         watchedState.network.error = null;
       })
@@ -91,7 +92,7 @@ export default async () => {
             const feed = parse(response);
             return [...posts, ...feed.posts];
           }, []);
-        const compare = (receivedPost, oldPost) => receivedPost.guid === oldPost.guid;
+        const compare = (receivedPost, oldPost) => receivedPost.link === oldPost.link;
         const newPosts = _.differenceWith(receivedPosts, state.posts, compare);
         watchedState.posts = [...state.posts, ...newPosts];
         setTimeout(loadNewPosts, postLoadingInterval);
