@@ -6,7 +6,7 @@ const htmlEscape = (str) => {
   return temp.innerHTML;
 };
 
-export const renderModal = (elements, watchedState, i18n) => {
+export const renderModal = (elements, watchedState) => {
   if (watchedState.modal.selectedPostId === null) {
     return;
   }
@@ -100,7 +100,7 @@ export const getWatchedState = (elements, state, i18n) => {
         renderForm(elements, watchedState, i18n);
         break;
       case 'modal.selectedPostId':
-        renderModal(elements, watchedState, i18n);
+        renderModal(elements, watchedState);
         break;
       case 'network.process':
       case 'network.error':
