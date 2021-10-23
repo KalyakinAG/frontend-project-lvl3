@@ -49,13 +49,8 @@ export default async () => {
     feedback: document.querySelector('.feedback'),
   };
 
-  const watchedState = view.getWatchedState(elements, state);
-
-  modal.addEventListener('show.bs.modal', (e) => {
-    const a = e.relatedTarget.parentElement.querySelector('a');
-    watchedState.modal.selectedPostId = a.getAttribute('data-id');
-    watchedState.ui.readedPosts.add(watchedState.modal.selectedPostId);
-  });
+  const i18n = i18next.createInstance();
+  const watchedState = view.getWatchedState(elements, state, i18n);
 
   const loadRSS = async (feedURL) => {
     watchedState.network.process = 'progress';
@@ -106,9 +101,7 @@ export default async () => {
       });
   };
 
-  state.i18n = i18next.createInstance();
-
-  return state.i18n.init({
+  return i18n.init({
     lng: 'ru',
     resources: {
       ru,
@@ -116,6 +109,11 @@ export default async () => {
     },
   })
     .then(() => {
+      modal.addEventListener('show.bs.modal', (e) => {
+        const a = e.relatedTarget.parentElement.querySelector('a');
+        watchedState.modal.selectedPostId = a.getAttribute('data-id');
+        watchedState.ui.readedPosts.add(watchedState.modal.selectedPostId);
+      });
       modal.addEventListener('hide.bs.modal', () => {
         watchedState.modal.selectedPostId = null;
       });
