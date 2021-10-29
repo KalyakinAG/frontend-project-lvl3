@@ -9,10 +9,19 @@ import { ru, en } from './locales/index.js';
 
 const addProxy = (url) => `https://hexlet-allorigins.herokuapp.com/get?url=${url}&disableCache=true`;
 
+yup.setLocale({
+  mixed: {
+    notOneOf: 'dublicate',
+  },
+  string: {
+    url: 'invalid_url',
+  },
+});
+
 const validateURL = async (url, exceptionURLs) => {
   const schema = yup.string()
-    .url('invalid_url')
-    .notOneOf(exceptionURLs, 'dublicate');
+    .url()
+    .notOneOf(exceptionURLs);
   return schema.validate(url);
 };
 
