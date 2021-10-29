@@ -1,4 +1,5 @@
 import onChange from 'on-change';
+import * as bootstrap from 'bootstrap';
 
 const htmlEscape = (str) => {
   const temp = document.createElement('div');
@@ -7,10 +8,12 @@ const htmlEscape = (str) => {
 };
 
 export const renderModal = (elements, watchedState) => {
+  const { modal } = elements;
+  const bsModal = new bootstrap.Modal(modal, {});
   if (watchedState.modal.selectedPostId === null) {
+    bsModal.hide();
     return;
   }
-  const { modal } = elements;
   //  Оформление модального диалога
   const isSelectedPost = (item) => item.link === watchedState.modal.selectedPostId;
   const selectedPost = watchedState.posts.find(isSelectedPost);
@@ -20,6 +23,7 @@ export const renderModal = (elements, watchedState) => {
   modalTitle.textContent = selectedPost.title;
   modalBody.innerHTML = selectedPost.description;
   buttonFullArticle.setAttribute('href', selectedPost.link);
+  bsModal.show();
 };
 
 export const renderNetworkProcess = (elements, watchedState, i18n) => {
@@ -73,15 +77,13 @@ export const renderPosts = (elements, watchedState, i18n) => {
   if (watchedState.posts.length === 0) {
     return;
   }
-
   const capture = i18n.t('viewing');
   const htmlList = watchedState.posts.map((post) => {
     const classHref = watchedState.ui.readedPosts.has(post.link) ? 'font-weight-normal' : 'fw-bold';
     const htmlHref = `<a href = "${post.link}" data-id = "${post.link}" class = "${classHref}">${htmlEscape(post.title)}</a>`;
-    const htmlButton = `<button class = "btn btn-primary btn-sm" data-bs-toggle = "modal" data-bs-target = "#modal">${capture}</button>`;
+    const htmlButton = `<button class = "btn btn-primary btn-sm">${capture}</button>`;
     return `<li class = "list-group-item d-flex justify-content-between align-items-start">${htmlHref}${htmlButton}</li>`;
   });
-
   posts.innerHTML = `<h2>${i18n.t('posts')}</h2><ul class = "list-group">${htmlList.join('')}</ul>`;
 };
 

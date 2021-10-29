@@ -37,11 +37,10 @@ export default async () => {
     },
   };
   const form = document.querySelector('.rss-form');
-  const modal = document.querySelector('.modal');
   const input = form.querySelector('input');
   const elements = {
     form,
-    modal,
+    modal: document.querySelector('.modal'),
     input,
     button: form.querySelector('button'),
     feeds: document.querySelector('.feeds'),
@@ -56,10 +55,15 @@ export default async () => {
     watchedState.network.process = 'progress';
     return axios.get(addProxy(feedURL))
       .then((response) => {
-        const feed = parse(response);
-        feed.url = feedURL;
-        watchedState.feeds = [feed].concat(watchedState.feeds);
-        watchedState.posts = [...state.posts, ...feed.posts];
+        const rss = parse(response.data.contents);
+        const feed = {
+          title: rss.title,
+          description: rss.description,
+          link: rss.link,
+          url: feedURL,
+        };
+        watchedState.feeds = [...state.feeds, ...[feed]];
+        watchedState.posts = [...state.posts, ...rss.posts];
         form.reset();
         input.focus();
         watchedState.network.process = 'idle';
@@ -82,9 +86,8 @@ export default async () => {
     const promises = state.feeds.map(
       (feed) => axios.get(addProxy(feed.url))
         .then((response) => {
-          const rss = parse(response);
-          const compare = (receivedPost, oldPost) => receivedPost.link === oldPost.link;
-          const newPosts = _.differenceWith(rss.posts, state.posts, compare);
+          const rss = parse(response.data.contents);
+          const newPosts = _.differenceBy(rss.posts, state.posts, 'link');
           watchedState.posts = [...state.posts, ...newPosts];
         }),
     );
@@ -109,15 +112,19 @@ export default async () => {
     },
   })
     .then(() => {
-      modal.addEventListener('show.bs.modal', (e) => {
-        const a = e.relatedTarget.parentElement.querySelector('a');
-        watchedState.modal.selectedPostId = a.getAttribute('data-id');
+      elements.posts.addEventListener('click', (e) => {
+        const elementListItem = e.target.closest('.list-group-item');
+        if (elementListItem === null) {
+          return;
+        }
+        const element = elementListItem.querySelector('a');
+        watchedState.modal.selectedPostId = element.getAttribute('data-id');
         watchedState.ui.readedPosts.add(watchedState.modal.selectedPostId);
       });
-      modal.addEventListener('hide.bs.modal', () => {
+      elements.modal.addEventListener('hide.bs.modal', () => {
         watchedState.modal.selectedPostId = null;
       });
-      form.addEventListener('submit', async (event) => {
+      elements.form.addEventListener('submit', async (event) => {
         event.preventDefault();
         const formData = new FormData(event.target);
         const feedURL = formData.get('url');
@@ -133,8 +140,6 @@ export default async () => {
             input.focus();
           });
       });
-    })
-    .then(() => {
-      loadNewPosts();
+      return loadNewPosts();
     });
 };
