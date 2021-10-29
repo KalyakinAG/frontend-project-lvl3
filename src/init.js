@@ -89,18 +89,18 @@ export default async () => {
           const rss = parse(response.data.contents);
           const newPosts = _.differenceBy(rss.posts, state.posts, 'link');
           watchedState.posts = [...state.posts, ...newPosts];
+        })
+        .catch((e) => {
+          if (e.message === 'Network Error') {
+            watchedState.network.error = 'connection_error';
+          } else {
+            watchedState.network.error = e.message;
+          }
         }),
     );
     return Promise.all(promises)
       .then(() => {
         setTimeout(loadNewPosts, postLoadingInterval);
-      })
-      .catch((e) => {
-        if (e.message === 'Network Error') {
-          watchedState.network.error = 'connection_error';
-        } else {
-          watchedState.network.error = e.message;
-        }
       });
   };
 
