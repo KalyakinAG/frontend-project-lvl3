@@ -113,10 +113,12 @@ export default async () => {
   })
     .then(() => {
       elements.posts.addEventListener('click', (e) => {
-        const elementListItem = e.target.closest('.list-group-item');
-        if (elementListItem === null) {
+        if (!e.target.classList.contains('btn')) {
           return;
         }
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        const elementListItem = e.target.closest('.list-group-item');
         const element = elementListItem.querySelector('a');
         watchedState.modal.selectedPostId = element.getAttribute('data-id');
         watchedState.ui.readedPosts.add(watchedState.modal.selectedPostId);

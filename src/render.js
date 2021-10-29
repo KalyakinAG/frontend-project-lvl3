@@ -8,12 +8,11 @@ const htmlEscape = (str) => {
 };
 
 export const renderModal = (elements, watchedState) => {
-  const { modal } = elements;
-  const bsModal = new bootstrap.Modal(modal, {});
   if (watchedState.modal.selectedPostId === null) {
-    bsModal.hide();
     return;
   }
+  const { modal } = elements;
+  const bsModal = new bootstrap.Modal(modal, {});
   //  Оформление модального диалога
   const isSelectedPost = (item) => item.link === watchedState.modal.selectedPostId;
   const selectedPost = watchedState.posts.find(isSelectedPost);
