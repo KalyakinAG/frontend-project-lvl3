@@ -78,7 +78,7 @@ export default async () => {
         } else {
           watchedState.network.error = e.message;
         }
-        watchedState.network.process = 'idle';
+        watchedState.network.process = 'error';
       });
   };
 

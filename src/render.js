@@ -37,18 +37,20 @@ export const renderNetworkProcess = (elements, watchedState, i18n) => {
     case 'idle':
       input.removeAttribute('readonly');
       button.removeAttribute('disabled');
-      if (watchedState.network.error !== null) {
-        feedback.classList.remove('text-success');
-        feedback.classList.add('text-danger');
-        feedback.textContent = i18n.t(watchedState.network.error);
-      } else {
-        feedback.classList.remove('text-success');
-        feedback.classList.add('text-success');
-        feedback.textContent = i18n.t('success');
-      }
+      feedback.classList.remove('text-success');
+      feedback.classList.add('text-success');
+      feedback.textContent = i18n.t('success');
+      break;
+    case 'error':
+      input.removeAttribute('readonly');
+      button.removeAttribute('disabled');
+      feedback.classList.remove('text-success');
+      feedback.classList.add('text-danger');
+      feedback.textContent = i18n.t(watchedState.network.error);
       break;
     default:
   }
+  input.focus();
 };
 
 export const renderForm = (elements, watchedState, i18n) => {
@@ -93,7 +95,6 @@ export const renderPosts = (elements, watchedState, i18n) => {
 
 export const getWatchedState = (elements, state, i18n) => {
   const watchedState = onChange(state, (path) => {
-    console.log(path);
     switch (path) {
       case 'feeds':
         renderFeeds(elements, watchedState, i18n);
