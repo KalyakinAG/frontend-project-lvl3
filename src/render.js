@@ -1,7 +1,7 @@
 import onChange from 'on-change';
 import * as bootstrap from 'bootstrap';
 
-const htmlEscape = (str) => {
+const escapeHtml = (str) => {
   const temp = document.createElement('div');
   temp.textContent = str;
   return temp.innerHTML;
@@ -14,7 +14,7 @@ export const renderModal = (elements, watchedState) => {
   const { modal } = elements;
   const bsModal = new bootstrap.Modal(modal, {});
   //  Оформление модального диалога
-  const isSelectedPost = (item) => item.link === watchedState.modal.selectedPostId;
+  const isSelectedPost = (item) => item.title === watchedState.modal.selectedPostId;
   const selectedPost = watchedState.posts.find(isSelectedPost);
   const modalTitle = modal.querySelector('.modal-title');
   const modalBody = modal.querySelector('.modal-body');
@@ -27,20 +27,22 @@ export const renderModal = (elements, watchedState) => {
 
 export const renderNetworkProcess = (elements, watchedState, i18n) => {
   const { input, button, feedback } = elements;
-  feedback.classList.remove('text-success', 'text-danger');
   input.classList.remove('is-invalid');
-  input.removeAttribute('readonly');
-  button.removeAttribute('disabled');
   switch (watchedState.network.process) {
     case 'progress':
-      input.setAttribute('readonly', null);
-      button.setAttribute('disabled', null);
+      feedback.classList.remove('text-success', 'text-danger');
+      input.removeAttribute('readonly');
+      button.removeAttribute('disabled');
       break;
     case 'idle':
+      input.removeAttribute('readonly');
+      button.removeAttribute('disabled');
       if (watchedState.network.error !== null) {
+        feedback.classList.remove('text-success');
         feedback.classList.add('text-danger');
         feedback.textContent = i18n.t(watchedState.network.error);
       } else {
+        feedback.classList.remove('text-success');
         feedback.classList.add('text-success');
         feedback.textContent = i18n.t('success');
       }
@@ -50,14 +52,17 @@ export const renderNetworkProcess = (elements, watchedState, i18n) => {
 };
 
 export const renderForm = (elements, watchedState, i18n) => {
-  const { input, feedback } = elements;
-  input.classList.remove('is-invalid');
-  feedback.classList.remove('text-danger');
+  const { form, input, feedback } = elements;
   if (watchedState.form.error !== null) {
     input.classList.add('is-invalid');
     feedback.classList.add('text-danger');
     feedback.textContent = i18n.t(watchedState.form.error);
+  } else {
+    input.classList.remove('is-invalid');
+    feedback.classList.remove('text-danger');
+    form.reset();
   }
+  input.focus();
 };
 
 export const renderFeeds = (elements, watchedState, i18n) => {
@@ -66,7 +71,7 @@ export const renderFeeds = (elements, watchedState, i18n) => {
   if (watchedState.feeds.length === 0) {
     return;
   }
-  const htmlFeeds = watchedState.feeds.map((feed) => `<li class = "list-group-item"><h3>${htmlEscape(feed.title)}</h3><p>${htmlEscape(feed.description)}</p></li>`);
+  const htmlFeeds = watchedState.feeds.map((feed) => `<li class = "list-group-item"><h3>${escapeHtml(feed.title)}</h3><p>${escapeHtml(feed.description)}</p></li>`);
   feeds.innerHTML = `<h2>${i18n.t('feeds')}</h2><ul class = "list-group mb-5">${htmlFeeds.join('')}</ul>`;
 };
 
@@ -78,9 +83,9 @@ export const renderPosts = (elements, watchedState, i18n) => {
   }
   const capture = i18n.t('viewing');
   const htmlList = watchedState.posts.map((post) => {
-    const classHref = watchedState.ui.readedPosts.has(post.link) ? 'font-weight-normal' : 'fw-bold';
-    const htmlHref = `<a href = "${post.link}" data-id = "${post.link}" class = "${classHref}">${htmlEscape(post.title)}</a>`;
-    const htmlButton = `<button class = "btn btn-primary btn-sm">${capture}</button>`;
+    const classHref = watchedState.ui.readedPosts.has(post.title) ? 'font-weight-normal' : 'fw-bold';
+    const htmlHref = `<a href = "${post.link}" class = "${classHref}">${escapeHtml(post.title)}</a>`;
+    const htmlButton = `<button class = "btn btn-primary btn-sm" data-id = "${post.title}">${capture}</button>`;
     return `<li class = "list-group-item d-flex justify-content-between align-items-start">${htmlHref}${htmlButton}</li>`;
   });
   posts.innerHTML = `<h2>${i18n.t('posts')}</h2><ul class = "list-group">${htmlList.join('')}</ul>`;
@@ -88,6 +93,7 @@ export const renderPosts = (elements, watchedState, i18n) => {
 
 export const getWatchedState = (elements, state, i18n) => {
   const watchedState = onChange(state, (path) => {
+    console.log(path);
     switch (path) {
       case 'feeds':
         renderFeeds(elements, watchedState, i18n);

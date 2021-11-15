@@ -8,7 +8,7 @@ const parse = (data) => {
       title: channel.querySelector('title').textContent,
       description: channel.querySelector('description').textContent,
       link: channel.querySelector('link').textContent,
-      posts: postsItems.map((item) => ({
+      items: postsItems.map((item) => ({
         title: item.querySelector('title').textContent,
         description: item.querySelector('description').textContent,
         link: item.querySelector('link').textContent,

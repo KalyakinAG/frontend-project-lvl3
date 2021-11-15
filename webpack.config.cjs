@@ -21,5 +21,9 @@ module.exports = {
       template: 'index.html',
     }),
   ],
-  mode: 'development',
+  mode: 'production',
+  performance: {
+    maxEntrypointSize: 1512000,
+    maxAssetSize: 1512000,
+  },
 };

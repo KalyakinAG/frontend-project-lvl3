@@ -9,25 +9,8 @@ import { ru, en } from './locales/index.js';
 
 const addProxy = (url) => `https://hexlet-allorigins.herokuapp.com/get?url=${url}&disableCache=true`;
 
-yup.setLocale({
-  mixed: {
-    notOneOf: 'dublicate',
-  },
-  string: {
-    url: 'invalid_url',
-  },
-});
-
-const validateURL = async (url, exceptionURLs) => {
-  const schema = yup.string()
-    .url()
-    .notOneOf(exceptionURLs);
-  return schema.validate(url);
-};
-
 export default async () => {
   const state = {
-    i18n: null,
     feeds: [], //  { title, description, link, url }
     posts: [], //  { title, description, link, pubDate }
     modal: {
@@ -56,8 +39,21 @@ export default async () => {
     posts: document.querySelector('.posts'),
     feedback: document.querySelector('.feedback'),
   };
-
   const i18n = i18next.createInstance();
+  yup.setLocale({
+    mixed: {
+      notOneOf: 'dublicate',
+    },
+    string: {
+      url: 'invalid_url',
+    },
+  });
+  const validateURL = async (url, exceptionURLs) => {
+    const schema = yup.string()
+      .url()
+      .notOneOf(exceptionURLs);
+    return schema.validate(url);
+  };
   const watchedState = view.getWatchedState(elements, state, i18n);
 
   const loadRSS = async (feedURL) => {
@@ -71,10 +67,8 @@ export default async () => {
           link: rss.link,
           url: feedURL,
         };
-        watchedState.feeds = [...state.feeds, ...[feed]];
-        watchedState.posts = [...state.posts, ...rss.posts];
-        form.reset();
-        input.focus();
+        watchedState.feeds = [...state.feeds, feed];
+        watchedState.posts = [...state.posts, ...rss.items];
         watchedState.network.process = 'idle';
         watchedState.network.error = null;
       })
@@ -85,7 +79,6 @@ export default async () => {
           watchedState.network.error = e.message;
         }
         watchedState.network.process = 'idle';
-        input.focus();
       });
   };
 
@@ -96,7 +89,7 @@ export default async () => {
       (feed) => axios.get(addProxy(feed.url))
         .then((response) => {
           const rss = parse(response.data.contents);
-          const newPosts = _.differenceBy(rss.posts, state.posts, 'link');
+          const newPosts = _.differenceBy(rss.posts, state.posts, 'title');
           watchedState.posts = [...state.posts, ...newPosts];
         })
         .catch((e) => {
@@ -126,10 +119,7 @@ export default async () => {
           return;
         }
         e.preventDefault();
-        e.stopImmediatePropagation();
-        const elementListItem = e.target.closest('.list-group-item');
-        const element = elementListItem.querySelector('a');
-        watchedState.modal.selectedPostId = element.getAttribute('data-id');
+        watchedState.modal.selectedPostId = e.target.getAttribute('data-id');
         watchedState.ui.readedPosts.add(watchedState.modal.selectedPostId);
       });
       elements.modal.addEventListener('hide.bs.modal', () => {
@@ -148,9 +138,8 @@ export default async () => {
           .catch((e) => {
             [watchedState.form.error] = e.errors;
             watchedState.form.valid = false;
-            input.focus();
           });
       });
-      return loadNewPosts();
+      setTimeout(loadNewPosts, postLoadingInterval);
     });
 };
