@@ -31,8 +31,8 @@ export const renderNetworkProcess = (elements, watchedState, i18n) => {
   switch (watchedState.network.process) {
     case 'progress':
       feedback.classList.remove('text-success', 'text-danger');
-      input.removeAttribute('readonly');
-      button.removeAttribute('disabled');
+      input.addAttribute('readonly');
+      button.addAttribute('disabled');
       break;
     case 'idle':
       input.removeAttribute('readonly');
