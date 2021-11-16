@@ -2,6 +2,10 @@ const parse = (data) => {
   try {
     const parserDOM = new DOMParser();
     const rss = parserDOM.parseFromString(data, 'application/xml');
+    const parsererror = rss.querySelector('parsererror');
+    if (parsererror !== null) {
+      throw new Error(parsererror.querySelector('div').textContent);
+    }
     const channel = rss.querySelector('channel');
     const postsItems = Array.from(channel.querySelectorAll('item'));
     const feed = {
