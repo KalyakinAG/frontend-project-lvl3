@@ -4,10 +4,22 @@ import * as yup from 'yup';
 import axios from 'axios';
 import _ from 'lodash';
 import parse from './parser.js';
-import * as view from './render.js';
+import getWatchedState from './render.js';
 import { ru, en } from './locales/index.js';
 
-const addProxy = (url) => `https://hexlet-allorigins.herokuapp.com/get?url=${url}&disableCache=true`;
+const addProxy = (url) => {
+  const URLObject = new URL('/get', 'https://hexlet-allorigins.herokuapp.com/');
+  URLObject.searchParams.set('url', url);
+  URLObject.searchParams.set('disableCache', true);
+  return URLObject.href;
+};
+
+const validateURL = async (url, exceptionURLs) => {
+  const schema = yup.string()
+    .url()
+    .notOneOf(exceptionURLs);
+  return schema.validate(url);
+};
 
 export default async () => {
   const state = {
@@ -18,11 +30,11 @@ export default async () => {
     },
     form: {
       valid: false,
-      error: '',
+      error: null,
     },
     network: {
-      process: '',
-      error: '',
+      process: 'idle',
+      error: null,
     },
     ui: {
       readedPosts: new Set(),
@@ -48,13 +60,7 @@ export default async () => {
       url: 'invalid_url',
     },
   });
-  const validateURL = async (url, exceptionURLs) => {
-    const schema = yup.string()
-      .url()
-      .notOneOf(exceptionURLs);
-    return schema.validate(url);
-  };
-  const watchedState = view.getWatchedState(elements, state, i18n);
+  const watchedState = getWatchedState(elements, state, i18n);
 
   const loadRSS = async (feedURL) => {
     watchedState.network.process = 'progress';

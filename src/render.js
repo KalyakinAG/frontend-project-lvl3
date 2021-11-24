@@ -7,7 +7,7 @@ const escapeHtml = (str) => {
   return temp.innerHTML;
 };
 
-export const renderModal = (elements, watchedState) => {
+const renderModal = (elements, watchedState) => {
   if (watchedState.modal.selectedPostId === null) {
     return;
   }
@@ -25,7 +25,7 @@ export const renderModal = (elements, watchedState) => {
   bsModal.show();
 };
 
-export const renderNetworkProcess = (elements, watchedState, i18n) => {
+const renderNetworkProcess = (elements, watchedState, i18n) => {
   const { input, button, feedback } = elements;
   input.classList.remove('is-invalid');
   switch (watchedState.network.process) {
@@ -53,7 +53,7 @@ export const renderNetworkProcess = (elements, watchedState, i18n) => {
   input.focus();
 };
 
-export const renderForm = (elements, watchedState, i18n) => {
+const renderForm = (elements, watchedState, i18n) => {
   const { form, input, feedback } = elements;
   if (watchedState.form.error !== null) {
     input.classList.add('is-invalid');
@@ -67,7 +67,7 @@ export const renderForm = (elements, watchedState, i18n) => {
   input.focus();
 };
 
-export const renderFeeds = (elements, watchedState, i18n) => {
+const renderFeeds = (elements, watchedState, i18n) => {
   const { feeds } = elements;
   feeds.innerHTML = '';
   if (watchedState.feeds.length === 0) {
@@ -77,7 +77,7 @@ export const renderFeeds = (elements, watchedState, i18n) => {
   feeds.innerHTML = `<h2>${i18n.t('feeds')}</h2><ul class = "list-group mb-5">${htmlFeeds.join('')}</ul>`;
 };
 
-export const renderPosts = (elements, watchedState, i18n) => {
+const renderPosts = (elements, watchedState, i18n) => {
   const { posts } = elements;
   posts.innerHTML = '';
   if (watchedState.posts.length === 0) {
@@ -93,7 +93,7 @@ export const renderPosts = (elements, watchedState, i18n) => {
   posts.innerHTML = `<h2>${i18n.t('posts')}</h2><ul class = "list-group">${htmlList.join('')}</ul>`;
 };
 
-export const getWatchedState = (elements, state, i18n) => {
+const getWatchedState = (elements, state, i18n) => {
   const watchedState = onChange(state, (path) => {
     switch (path) {
       case 'feeds':
@@ -120,3 +120,5 @@ export const getWatchedState = (elements, state, i18n) => {
   });
   return watchedState;
 };
+
+export default getWatchedState;
