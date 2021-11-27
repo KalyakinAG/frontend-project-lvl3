@@ -3,7 +3,7 @@ import i18next from 'i18next';
 import * as yup from 'yup';
 import axios from 'axios';
 import _ from 'lodash';
-import parse from './parser.js';
+import parse, { ParseError } from './parser.js';
 import getWatchedState from './render.js';
 import { ru, en } from './locales/index.js';
 
@@ -79,8 +79,10 @@ export default async () => {
         watchedState.network.error = null;
       })
       .catch((e) => {
-        if (e.message === 'Network Error') {
+        if (axios.isAxiosError(e)) {
           watchedState.network.error = 'connection_error';
+        } else if (e instanceof ParseError) {
+          watchedState.network.error = 'invalid_rss';
         } else {
           watchedState.network.error = e.message;
         }
