@@ -14,13 +14,13 @@ const renderModal = (elements, watchedState) => {
   const { modal } = elements;
   const bsModal = new bootstrap.Modal(modal, {});
   //  Оформление модального диалога
-  const isSelectedPost = (item) => item.title === watchedState.modal.selectedPostId;
+  const isSelectedPost = (item) => item.guid === watchedState.modal.selectedPostId;
   const selectedPost = watchedState.posts.find(isSelectedPost);
   const modalTitle = modal.querySelector('.modal-title');
   const modalBody = modal.querySelector('.modal-body');
   const buttonFullArticle = modal.querySelector('.btn-primary');
   modalTitle.textContent = selectedPost.title;
-  modalBody.innerHTML = selectedPost.description;
+  modalBody.innerHTML = escapeHtml(selectedPost.description);
   buttonFullArticle.setAttribute('href', selectedPost.link);
   bsModal.show();
 };
@@ -37,7 +37,7 @@ const renderNetworkProcess = (elements, watchedState, i18n) => {
     case 'idle':
       input.removeAttribute('readonly');
       button.removeAttribute('disabled');
-      feedback.classList.remove('text-success');
+      feedback.classList.remove('text-danger');
       feedback.classList.add('text-success');
       feedback.textContent = i18n.t('success');
       break;
@@ -85,9 +85,9 @@ const renderPosts = (elements, watchedState, i18n) => {
   }
   const capture = i18n.t('viewing');
   const htmlList = watchedState.posts.map((post) => {
-    const classHref = watchedState.ui.readedPosts.has(post.title) ? 'font-weight-normal' : 'fw-bold';
+    const classHref = watchedState.ui.readedPosts.has(post.guid) ? 'font-weight-normal' : 'fw-bold';
     const htmlHref = `<a href = "${post.link}" class = "${classHref}">${escapeHtml(post.title)}</a>`;
-    const htmlButton = `<button class = "btn btn-primary btn-sm" data-id = "${post.title}">${capture}</button>`;
+    const htmlButton = `<button class = "btn btn-primary btn-sm" data-id = "${post.guid}">${capture}</button>`;
     return `<li class = "list-group-item d-flex justify-content-between align-items-start">${htmlHref}${htmlButton}</li>`;
   });
   posts.innerHTML = `<h2>${i18n.t('posts')}</h2><ul class = "list-group">${htmlList.join('')}</ul>`;

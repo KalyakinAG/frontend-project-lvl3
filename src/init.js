@@ -24,7 +24,7 @@ const validateURL = async (url, exceptionURLs) => {
 export default async () => {
   const state = {
     feeds: [], //  { title, description, link, url }
-    posts: [], //  { title, description, link, pubDate }
+    posts: [], //  { feedLink, title, description, link, pubDate, guid }
     modal: {
       selectedPostId: null,
     },
@@ -73,8 +73,10 @@ export default async () => {
           link: rss.link,
           url: feedURL,
         };
+        const mapItemToPost = (item) => ({ ...item, feedLink: feed.link, guid: _.uniqueId() });
+        const posts = rss.items.map(mapItemToPost);
         watchedState.feeds = [...state.feeds, feed];
-        watchedState.posts = [...state.posts, ...rss.items];
+        watchedState.posts = [...state.posts, ...posts];
         watchedState.network.process = 'idle';
         watchedState.network.error = null;
       })
@@ -97,7 +99,9 @@ export default async () => {
       (feed) => axios.get(addProxy(feed.url))
         .then((response) => {
           const rss = parse(response.data.contents);
-          const newPosts = _.differenceBy(rss.posts, state.posts, 'title');
+          const mapItemToPost = (item) => ({ ...item, feedLink: feed.link, guid: _.uniqueId() });
+          const posts = rss.items.map(mapItemToPost);
+          const newPosts = _.differenceBy(posts, state.posts, 'feedLink', 'title');
           watchedState.posts = [...state.posts, ...newPosts];
         })
         .catch((e) => {
@@ -123,7 +127,7 @@ export default async () => {
   })
     .then(() => {
       elements.posts.addEventListener('click', (e) => {
-        if (!e.target.classList.contains('btn')) {
+        if (!e.target.hasAttribute('data-id')) {
           return;
         }
         e.preventDefault();
