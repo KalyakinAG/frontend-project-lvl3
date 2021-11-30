@@ -39,3 +39,7 @@
 ```
 
 После сборки результат доступен здесь: ./dist/index.html
+
+## Дополнительно
+
+[Спецификация по rss](https://validator.w3.org/feed/docs/rss2.html#ltguidgtSubelementOfLtitemgt)
