@@ -1,12 +1,11 @@
-/* eslint-disable functional/no-class */
-export class ParseError extends Error {}
-
 const parse = (data) => {
   const parserDOM = new DOMParser();
   const rss = parserDOM.parseFromString(data, 'application/xml');
   const parsererror = rss.querySelector('parsererror');
   if (parsererror !== null) {
-    throw new ParseError(parsererror.querySelector('div').textContent);
+    const error = new Error(parsererror.textContent);
+    error.isParseError = true;
+    throw error;
   }
   try {
     const channel = rss.querySelector('channel');
