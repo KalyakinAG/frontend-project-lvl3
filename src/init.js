@@ -104,13 +104,7 @@ export default async () => {
           const newPosts = _.differenceBy(posts, state.posts, 'feedLink', 'title');
           watchedState.posts = [...state.posts, ...newPosts];
         })
-        .catch((e) => {
-          if (e.message === 'Network Error') {
-            watchedState.network.error = 'connection_error';
-          } else {
-            watchedState.network.error = e.message;
-          }
-        }),
+        .catch(),
     );
     return Promise.all(promises)
       .then(() => {
