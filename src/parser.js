@@ -1,13 +1,11 @@
 const parse = (data) => {
-  const parserDOM = new DOMParser();
-  const rss = parserDOM.parseFromString(data, 'application/xml');
-  const parsererror = rss.querySelector('parsererror');
-  if (parsererror !== null) {
-    const error = new Error(parsererror.textContent);
-    error.isParseError = true;
-    throw error;
-  }
   try {
+    const parserDOM = new DOMParser();
+    const rss = parserDOM.parseFromString(data, 'application/xml');
+    const parsererror = rss.querySelector('parsererror');
+    if (parsererror !== null) {
+      throw new Error(parsererror.textContent);
+    }
     const channel = rss.querySelector('channel');
     const postsItems = Array.from(channel.querySelectorAll('item'));
     const feed = {
@@ -23,7 +21,8 @@ const parse = (data) => {
     };
     return feed;
   } catch (e) {
-    throw new Error('invalid_rss');
+    e.isParseError = true;
+    throw e;
   }
 };
 

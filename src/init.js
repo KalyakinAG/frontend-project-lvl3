@@ -8,10 +8,10 @@ import getWatchedState from './render.js';
 import { ru, en } from './locales/index.js';
 
 const addProxy = (url) => {
-  const URLObject = new URL('/get', 'https://hexlet-allorigins.herokuapp.com/');
-  URLObject.searchParams.set('url', url);
-  URLObject.searchParams.set('disableCache', true);
-  return URLObject.href;
+  const urlWithProxy = new URL('/get', 'https://hexlet-allorigins.herokuapp.com/');
+  urlWithProxy.searchParams.set('url', url);
+  urlWithProxy.searchParams.set('disableCache', true);
+  return urlWithProxy.toString();
 };
 
 const validateURL = async (url, exceptionURLs) => {
@@ -73,8 +73,9 @@ export default async () => {
           link: rss.link,
           url: feedURL,
         };
-        const mapItemToPost = (item) => ({ ...item, feedLink: feed.link, guid: _.uniqueId() });
-        const posts = rss.items.map(mapItemToPost);
+        const posts = rss.items.map(
+          (item) => ({ ...item, feedLink: feed.link, guid: _.uniqueId() }),
+        );
         watchedState.feeds = [...state.feeds, feed];
         watchedState.posts = [...state.posts, ...posts];
         watchedState.network.process = 'idle';
@@ -86,7 +87,7 @@ export default async () => {
         } else if (e.isParseError) {
           watchedState.network.error = 'invalid_rss';
         } else {
-          watchedState.network.error = 'invalid_rss';
+          watchedState.network.error = 'unknown_error';
         }
         watchedState.network.process = 'error';
       });
@@ -99,12 +100,15 @@ export default async () => {
       (feed) => axios.get(addProxy(feed.url))
         .then((response) => {
           const rss = parse(response.data.contents);
-          const mapItemToPost = (item) => ({ ...item, feedLink: feed.link, guid: _.uniqueId() });
-          const posts = rss.items.map(mapItemToPost);
+          const posts = rss.items.map(
+            (item) => ({ ...item, feedLink: feed.link, guid: _.uniqueId() }),
+          );
           const newPosts = _.differenceBy(posts, state.posts, 'feedLink', 'title');
           watchedState.posts = [...state.posts, ...newPosts];
         })
-        .catch(),
+        .catch((e) => {
+          console.log(e);
+        }),
     );
     return Promise.all(promises)
       .then(() => {

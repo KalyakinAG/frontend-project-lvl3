@@ -14,8 +14,9 @@ const renderModal = (elements, watchedState) => {
   const { modal } = elements;
   const bsModal = new bootstrap.Modal(modal, {});
   //  Оформление модального диалога
-  const isSelectedPost = (item) => item.guid === watchedState.modal.selectedPostId;
-  const selectedPost = watchedState.posts.find(isSelectedPost);
+  const selectedPost = watchedState.posts.find(
+    (item) => item.guid === watchedState.modal.selectedPostId,
+  );
   const modalTitle = modal.querySelector('.modal-title');
   const modalBody = modal.querySelector('.modal-body');
   const buttonFullArticle = modal.querySelector('.btn-primary');
@@ -73,7 +74,11 @@ const renderFeeds = (elements, watchedState, i18n) => {
   if (watchedState.feeds.length === 0) {
     return;
   }
-  const htmlFeeds = watchedState.feeds.map((feed) => `<li class = "list-group-item"><h3>${escapeHtml(feed.title)}</h3><p>${escapeHtml(feed.description)}</p></li>`);
+  const htmlFeeds = watchedState.feeds.map((feed) => `
+  <li class = "list-group-item">
+    <h3>${escapeHtml(feed.title)}</h3>
+    <p>${escapeHtml(feed.description)}</p>
+  </li>`);
   feeds.innerHTML = `<h2>${i18n.t('feeds')}</h2><ul class = "list-group mb-5">${htmlFeeds.join('')}</ul>`;
 };
 

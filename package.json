@@ -6,8 +6,7 @@
   "type": "module",
   "scripts": {
     "start": "webpack-dev-server",
-    "build": "webpack",
-    "serv": "static build"
+    "build": "webpack"
   },
   "repository": {
     "type": "git",
