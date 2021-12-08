@@ -87,6 +87,7 @@ export default async () => {
         } else if (e.isParseError) {
           watchedState.network.error = 'invalid_rss';
         } else {
+          console.log(e);
           watchedState.network.error = 'unknown_error';
         }
         watchedState.network.process = 'error';
