@@ -117,6 +117,7 @@ const getWatchedState = (elements, state, i18n) => {
         break;
       case 'network.process':
       case 'network.error':
+        renderForm(elements, watchedState, i18n);
         renderNetworkProcess(elements, watchedState, i18n);
         break;
       default:

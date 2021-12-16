@@ -23,8 +23,8 @@ const validateURL = async (url, exceptionURLs) => {
 
 export default async () => {
   const state = {
-    feeds: [], //  { title, description, link, url }
-    posts: [], //  { feedLink, title, description, link, pubDate, guid }
+    feeds: [], //  { title, description, id, url }
+    posts: [], //  { feedId, title, description, link, guid }
     modal: {
       selectedPostId: null,
     },
@@ -70,14 +70,14 @@ export default async () => {
         const feed = {
           title: rss.title,
           description: rss.description,
-          link: rss.link,
+          id: _.uniqueId(),
           url: feedURL,
         };
         const posts = rss.items.map(
-          (item) => ({ ...item, feedLink: feed.link, guid: _.uniqueId() }),
+          (item) => ({ ...item, feedId: feed.id, guid: _.uniqueId() }),
         );
         watchedState.feeds = [...state.feeds, feed];
-        watchedState.posts = [...state.posts, ...posts];
+        watchedState.posts = [...posts, ...state.posts];
         watchedState.network.process = 'idle';
         watchedState.network.error = null;
       })
@@ -102,10 +102,10 @@ export default async () => {
         .then((response) => {
           const rss = parse(response.data.contents);
           const posts = rss.items.map(
-            (item) => ({ ...item, feedLink: feed.link, guid: _.uniqueId() }),
+            (item) => ({ ...item, feedId: feed.id, guid: _.uniqueId() }),
           );
-          const newPosts = _.differenceBy(posts, state.posts, 'feedLink', 'title');
-          watchedState.posts = [...state.posts, ...newPosts];
+          const newPosts = _.differenceBy(posts, state.posts, 'feedId', 'title');
+          watchedState.posts = [...newPosts, ...state.posts];
         })
         .catch((e) => {
           console.log(e);
