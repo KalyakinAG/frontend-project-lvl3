@@ -75,11 +75,17 @@ const renderFeeds = (elements, watchedState, i18n) => {
     return;
   }
   const htmlFeeds = watchedState.feeds.map((feed) => `
-  <li class = "list-group-item">
-    <h3>${escapeHtml(feed.title)}</h3>
-    <p>${escapeHtml(feed.description)}</p>
+  <li class = "list-group-item border-0 border-end-0">
+    <h3 class="h6 m-0">${escapeHtml(feed.title)}</h3>
+    <p class="m-0 small text-black-50">${escapeHtml(feed.description)}</p>
   </li>`);
-  feeds.innerHTML = `<h2>${i18n.t('feeds')}</h2><ul class = "list-group mb-5">${htmlFeeds.join('')}</ul>`;
+  feeds.innerHTML = `
+  <div class="card-body">
+    <h2>${i18n.t('feeds')}</h2>
+  </div>
+  <ul class = "list-group border-0 rounded-0">
+    ${htmlFeeds.join('')}
+  </ul>`;
 };
 
 const renderPosts = (elements, watchedState, i18n) => {
@@ -91,11 +97,30 @@ const renderPosts = (elements, watchedState, i18n) => {
   const capture = i18n.t('viewing');
   const htmlList = watchedState.posts.map((post) => {
     const classHref = watchedState.ui.readedPosts.has(post.guid) ? 'font-weight-normal' : 'fw-bold';
-    const htmlHref = `<a href = "${post.link}" class = "${classHref}">${escapeHtml(post.title)}</a>`;
-    const htmlButton = `<button class = "btn btn-primary btn-sm" data-id = "${post.guid}">${capture}</button>`;
-    return `<li class = "list-group-item d-flex justify-content-between align-items-start">${htmlHref}${htmlButton}</li>`;
+    const htmlHref = `
+      <a href = "${post.link}" class = "${classHref}" data-id="2" target="_blank" rel="noopener noreferrer">
+        ${escapeHtml(post.title)}
+      </a>
+    `;
+    const htmlButton = `
+      <button type="button" class = "btn btn-outline-primary btn-sm" data-id = "${post.guid}">
+        ${capture}
+      </button>
+    `;
+    return `
+      <li class = "list-group-item d-flex justify-content-between align-items-start border-0 border-end-0">
+        ${htmlHref}${htmlButton}
+      </li>
+    `;
   });
-  posts.innerHTML = `<h2>${i18n.t('posts')}</h2><ul class = "list-group">${htmlList.join('')}</ul>`;
+  posts.innerHTML = `
+    <div class="card-body">
+      <h4>${i18n.t('posts')}</h4>
+    </div>
+    <ul class = "list-group border-0 rounded-0">
+      ${htmlList.join('')}
+    </ul>
+  `;
 };
 
 const getWatchedState = (elements, state, i18n) => {
